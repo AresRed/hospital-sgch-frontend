@@ -1,1 +1,69 @@
-<p>register works!</p>
+<div class=" mx-auto w-full text-gray-800">
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+
+        <div class="grid grid-cols-2 gap-6 mb-7">
+
+            <div class="relative">
+                <p-floatLabel variant="on">
+                    <input pInputText id="dni" formControlName="dni" class="w-full" />
+                    <label for="dni">DNI</label>
+                </p-floatLabel>
+
+            </div>
+
+            <div class="relative">
+                <p-floatLabel variant="on">
+                    <input pInputText id="nombre" formControlName="nombre" class="w-full" />
+                    <label for="nombre">Nombre</label>
+                </p-floatLabel>
+
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-7">
+
+            <div class="relative">
+                <p-floatLabel variant="on">
+                    <input pInputText id="email" type="email" formControlName="email" class="w-full" />
+                    <label for="email">Email</label>
+                </p-floatLabel>
+
+            </div>
+
+            <div class="relative">
+                <p-floatLabel variant="on">
+                    <p-password formControlName="password" [toggleMask]="true" [feedback]="false" styleClass="w-full"
+                        inputStyleClass="w-full"></p-password>
+                    <label for="password">Contraseña</label>
+                </p-floatLabel>
+
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <div *ngIf="selectedRole === 'DOCTOR'" class="relative">
+                <p-floatLabel variant="on">
+                    <input pInputText id="especialidad" formControlName="especialidad" class="w-full" />
+                    <label for="especialidad">Especialidad</label>
+                </p-floatLabel>
+
+            </div>
+
+            <div *ngIf="selectedRole === 'PACIENTE'" class="relative">
+                <p-floatLabel variant="on">
+                    <input pInputText id="seguroMedico" formControlName="seguroMedico" class="w-full" />
+                    <label for="seguroMedico">Seguro Médico</label>
+                </p-floatLabel>
+
+            </div>
+        </div>
+
+        <p-message *ngIf="errorMessage" severity="error" [text]="errorMessage" class="w-full block mb-4"></p-message>
+
+        <p-button label="Registrarse" icon="pi pi-user-plus" type="submit" [loading]="isLoading"
+            [disabled]="registerForm.invalid" styleClass="p-button-success w-full">
+        </p-button>
+    </form>
+</div>

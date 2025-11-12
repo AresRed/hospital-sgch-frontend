@@ -1,10 +1,39 @@
-<div class="flex min-h-screen">
-
-    <div class="w-2/5 flex flex-col justify-center items-center px-10">
-        <img src="logo-essalud-v2.svg" alt="">
-        <img src="fondo-home-01.svg" alt="">
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-6 w-full"> 
+    
+    <div class="p-inputgroup flex-1 w-full"> 
+        <span class="p-inputgroup-addon">
+            <i class="pi pi-envelope"></i>
+        </span>
+        
+        <p-floatlabel variant="on">
+            <input 
+                pInputText 
+                type="text" 
+                id="correo electronico" 
+                formControlName="email"
+                class="w-full" [ngClass]="{'ng-invalid ng-dirty': f['email'].invalid && f['email'].touched}"
+            >
+            <label for="email">Correo Electronico</label>
+        </p-floatlabel>
     </div>
-    <div class="w-3/5 bg-blue-700 text-white flex flex-col justify-center items-center px-12 corte-diagonal">
-        <h2 class="text-4xl font-bold mb-6">Contenido Centrado Derecha</h2>
-        </div>
-</div>
+
+    <div class="p-inputgroup flex-1 w-full">
+        <span class="p-inputgroup-addon">
+            <i class="pi pi-lock"></i>
+        </span>
+        <p-floatlabel variant="on"> 
+            <p-password 
+            formControlName="password" 
+            [toggleMask]="true" 
+            [feedback]="false" 
+            styleClass="w-full" 
+            inputStyleClass="w-full" 
+        ></p-password>
+        <label for="password">contraseña</label>
+        </p-floatlabel>
+    
+    </div>
+
+    <p-button label="Iniciar Sesión" type="submit" [loading]="loading" [disabled]="loginForm.invalid"
+        styleClass="p-button-danger w-full mt-4"></p-button>
+</form>

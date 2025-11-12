@@ -1,12 +1,1 @@
 /* CSS personalizado */
-.corte-diagonal {
-    /* clip-path crea una forma geométrica visible. */
-    /* La forma será un polígono de 4 puntos: */
-    
-    /* 1. 58% 0: Inicio de la diagonal en la parte superior. Ajusta 58% para cambiar el ángulo. */
-    /* 2. 100% 0: Esquina superior derecha. */
-    /* 3. 100% 100%: Esquina inferior derecha. */
-    /* 4. 0 100%: Esquina inferior izquierda. */
-    
-    clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%); 
-}
