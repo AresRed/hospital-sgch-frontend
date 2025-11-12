@@ -1,1 +1,90 @@
-<p>header works!</p>
+<header class="bg-white shadow-sm border-b border-gray-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+      <!-- Logo y Navegación -->
+      <div class="flex items-center">
+        <a routerLink="/" class="flex items-center">
+          <span class="ml-2 text-xl font-bold text-gray-800">Hospital SGCH</span>
+        </a>
+        
+        <!-- Navegación según rol -->
+        <nav class="hidden md:ml-10 md:flex md:items-baseline md:space-x-4">
+          <ng-container [ngSwitch]="user?.rol">
+            <!-- Navegación Administrador -->
+            <div *ngSwitchCase="'ADMINISTRADOR'" class="flex space-x-4">
+              <a routerLink="/admin/gestion-personal" 
+                 class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                Gestión Personal
+              </a>
+              <a routerLink="/admin/reportes" 
+                 class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                Reportes
+              </a>
+            </div>
+
+            <!-- Navegación Doctor -->
+            <div *ngSwitchCase="'DOCTOR'" class="flex space-x-4">
+              <a routerLink="/doctor/agenda" 
+                 class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                Agenda
+              </a>
+              <a routerLink="/doctor/expediente" 
+                 class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                Expedientes
+              </a>
+            </div>
+
+            <!-- Navegación Paciente -->
+            <div *ngSwitchCase="'PACIENTE'" class="flex space-x-4">
+              <a routerLink="/paciente/mis-citas" 
+                 class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                Mis Citas
+              </a>
+              <a routerLink="/paciente/agendar-cita" 
+                 class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                Agendar Cita
+              </a>
+            </div>
+          </ng-container>
+        </nav>
+      </div>
+
+      <!-- User Menu -->
+      <div class="flex items-center">
+        <div class="relative">
+          <button (click)="toggleUserMenu()" 
+                  class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+              {{ user?.nombre?.charAt(0) }}
+            </div>
+            <span class="ml-2 text-gray-700 hidden md:block">{{ user?.nombre }}</span>
+            <svg class="ml-1 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div *ngIf="showUserMenu" 
+               class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+            <div class="py-1">
+              <div class="px-4 py-2 text-sm text-gray-700 border-b">
+                <div class="font-medium">{{ user?.nombre }}</div>
+                <div class="text-gray-500">{{ getRolDisplay(user?.rol || '') }}</div>
+              </div>
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                Mi Perfil
+              </a>
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                Configuración
+              </a>
+              <button (click)="logout()" 
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-t">
+                Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

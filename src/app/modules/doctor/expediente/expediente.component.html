@@ -1,1 +1,194 @@
-<p>expediente works!</p>
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Expedientes Médicos</h1>
+    <p class="text-gray-600">Consulta y gestiona los expedientes de tus pacientes</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Lista de pacientes -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-lg shadow">
+        <div class="p-4 border-b border-gray-200">
+          <div class="relative">
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              placeholder="Buscar paciente..."
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+        </div>
+
+        <div class="max-h-96 overflow-y-auto">
+          <div *ngFor="let paciente of getPacientesFiltrados()"
+               (click)="seleccionarPaciente(paciente)"
+               [class]="pacienteSeleccionado?.id === paciente.id ? 'bg-blue-50 border-blue-500' : 'hover:bg-gray-50'"
+               class="p-4 border-b border-gray-200 cursor-pointer border-l-4 border-transparent">
+            
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-semibold text-gray-800">{{ paciente.nombre }}</h3>
+              <span class="text-sm text-gray-500">{{ paciente.edad }} años</span>
+            </div>
+            
+            <div class="flex items-center gap-2 text-sm text-gray-600 mb-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              {{ paciente.genero }}
+            </div>
+            
+            <div class="text-xs text-gray-500">
+              Última visita: {{ paciente.ultimaVisita | date:'dd/MM/yyyy' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalle del expediente -->
+    <div class="lg:col-span-2" *ngIf="expedienteSeleccionado && pacienteSeleccionado">
+      <div class="bg-white rounded-lg shadow">
+        <!-- Header del paciente -->
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex justify-between items-start">
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800">{{ pacienteSeleccionado.nombre }}</h2>
+              <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                <span>{{ pacienteSeleccionado.edad }} años</span>
+                <span>{{ pacienteSeleccionado.genero }}</span>
+                <span>{{ pacienteSeleccionado.telefono }}</span>
+              </div>
+            </div>
+            <button 
+              (click)="abrirModalNota()"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              Nueva Nota
+            </button>
+          </div>
+        </div>
+
+        <!-- Información médica -->
+        <div class="p-6 space-y-6">
+          <!-- Alergias -->
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">Alergias</h3>
+            <div class="flex flex-wrap gap-2">
+              <span *ngFor="let alergia of expedienteSeleccionado.alergias" 
+                    class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">
+                {{ alergia }}
+              </span>
+              <span *ngIf="expedienteSeleccionado.alergias.length === 0" class="text-gray-500">
+                No registra alergias
+              </span>
+            </div>
+          </div>
+
+          <!-- Condiciones -->
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">Condiciones Médicas</h3>
+            <div class="flex flex-wrap gap-2">
+              <span *ngFor="let condicion of expedienteSeleccionado.condiciones" 
+                    class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
+                {{ condicion }}
+              </span>
+              <span *ngIf="expedienteSeleccionado.condiciones.length === 0" class="text-gray-500">
+                No registra condiciones
+              </span>
+            </div>
+          </div>
+
+          <!-- Medicamentos -->
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">Medicamentos Actuales</h3>
+            <div class="flex flex-wrap gap-2">
+              <span *ngFor="let medicamento of expedienteSeleccionado.medicamentos" 
+                    class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                {{ medicamento }}
+              </span>
+              <span *ngIf="expedienteSeleccionado.medicamentos.length === 0" class="text-gray-500">
+                No registra medicamentos
+              </span>
+            </div>
+          </div>
+
+          <!-- Historial de notas -->
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">Historial Médico</h3>
+            <div class="space-y-4">
+              <div *ngFor="let nota of expedienteSeleccionado.notas" 
+                   class="border-l-4 border-blue-500 pl-4 py-2">
+                <div class="flex justify-between items-start mb-2">
+                  <span class="text-sm font-medium text-gray-800">{{ nota.fecha | date:'dd/MM/yyyy' }}</span>
+                  <span class="text-sm text-gray-500">{{ nota.doctor }}</span>
+                </div>
+                <div class="space-y-2 text-sm">
+                  <div><strong>Síntomas:</strong> {{ nota.sintomas }}</div>
+                  <div><strong>Diagnóstico:</strong> {{ nota.diagnostico }}</div>
+                  <div><strong>Tratamiento:</strong> {{ nota.tratamiento }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje cuando no hay paciente seleccionado -->
+    <div *ngIf="!pacienteSeleccionado" class="lg:col-span-2">
+      <div class="bg-white rounded-lg shadow p-12 text-center">
+        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <h3 class="text-lg font-semibold text-gray-600 mb-2">Selecciona un paciente</h3>
+        <p class="text-gray-500">Elige un paciente de la lista para ver su expediente médico.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para nueva nota -->
+  <div *ngIf="showNotaModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-lg max-w-2xl w-full p-6">
+      <h3 class="text-lg font-semibold mb-4">Agregar Nota Médica</h3>
+      
+      <form (ngSubmit)="agregarNota()">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Síntomas</label>
+            <textarea [(ngModel)]="nuevaNota.sintomas" name="sintomas" rows="3" required
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Diagnóstico</label>
+            <textarea [(ngModel)]="nuevaNota.diagnostico" name="diagnostico" rows="2" required
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tratamiento</label>
+            <textarea [(ngModel)]="nuevaNota.tratamiento" name="tratamiento" rows="3" required
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+        </div>
+        
+        <div class="flex gap-3 justify-end mt-6">
+          <button type="button" (click)="showNotaModal = false"
+                  class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">
+            Cancelar
+          </button>
+          <button type="submit"
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+            Guardar Nota
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,33 +1,41 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/auth/guards/auth.guard';
-import { roleGuard } from './core/auth/guards/role.guard';
-import { AuthComponent } from './modules/auth/auth/auth.component';
-export const routes: Routes = [{
+
+export const routes: Routes = [
+  {
     path: 'auth',
     loadComponent: () => import('./modules/auth/auth/auth.component').then(m => m.AuthComponent)
   },
   
-  // Rutas Protegidas por Rol
+  // Rutas directas (sin layout)
   {
-    path: 'admin',
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['ADMINISTRADOR'] }, // Rol requerido para esta ruta
+    path: 'admin/gestion-personal',
+    loadComponent: () => import('./modules/administrador/gestion-personal/gestion-personal.component').then(m => m.GestionPersonalComponent)
+  },
+  {
+    path: 'admin/reportes',
     loadComponent: () => import('./modules/administrador/reportes/reportes.component').then(m => m.ReportesComponent)
   },
   {
-    path: 'doctor',
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['DOCTOR', 'ADMINISTRADOR'] }, // Roles múltiples permitidos
+    path: 'doctor/agenda',
     loadComponent: () => import('./modules/doctor/agenda/agenda.component').then(m => m.AgendaComponent)
   },
   {
-    path: 'paciente',
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['PACIENTE'] },
+    path: 'doctor/expediente',
+    loadComponent: () => import('./modules/doctor/expediente/expediente.component').then(m => m.ExpedienteComponent)
+  },
+  {
+    path: 'paciente/agendar-cita',
     loadComponent: () => import('./modules/paciente/agendar-cita/agendar-cita.component').then(m => m.AgendarCitaComponent)
   },
+  {
+    path: 'paciente/mis-citas',
+    loadComponent: () => import('./modules/paciente/mis-citas/mis-citas.component').then(m => m.MisCitasComponent)
+  },
   
-  // Redirección por defecto
+  // Redirecciones
+  { path: 'admin', redirectTo: 'admin/gestion-personal', pathMatch: 'full' },
+  { path: 'doctor', redirectTo: 'doctor/agenda', pathMatch: 'full' },
+  { path: 'paciente', redirectTo: 'paciente/mis-citas', pathMatch: 'full' },
   { path: '', redirectTo: 'auth', pathMatch: 'full' },
-  // Ruta de fallback (404 o acceso denegado)
-  { path: '**', redirectTo: 'auth' }];
+  { path: '**', redirectTo: 'auth' }
+];

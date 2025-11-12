@@ -1,0 +1,28 @@
+// Estilos personalizados para agendar cita
+
+.card-hover {
+  transition: all 0.3s ease-in-out;
+  
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide {
+  animation: slideIn 0.4s ease-out;
+}
+
+.step-indicator {
+  transition: all 0.3s ease-in-out;
+}
