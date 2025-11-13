@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
+import { HeaderComponent } from '../../../shared/components/header/header.component';
 
 registerLocaleData(localeEs);
 
@@ -17,7 +18,7 @@ interface Cita {
 @Component({
   selector: 'app-agenda',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HeaderComponent],
   templateUrl: './agenda.component.html',
   styleUrl: './agenda.component.scss',
   providers: [

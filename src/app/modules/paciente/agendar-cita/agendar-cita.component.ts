@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HeaderComponent } from '../../../shared/components/header/header.component';
 
 interface Doctor {
   id: number;
@@ -18,7 +19,7 @@ interface HorarioDisponible {
 @Component({
   selector: 'app-agendar-cita',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HeaderComponent],
   templateUrl: './agendar-cita.component.html',
   styleUrls: ['./agendar-cita.component.scss']
 })

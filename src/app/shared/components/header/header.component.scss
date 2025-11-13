@@ -1,3 +1,28 @@
 :host {
   display: block;
 }
+
+// Estilos para los enlaces activos
+.active-route {
+  background-color: #dbeafe;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none;
+  }
+  
+  nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    
+    a {
+      font-size: 0.875rem;
+      padding: 0.5rem 0.75rem;
+    }
+  }
+}

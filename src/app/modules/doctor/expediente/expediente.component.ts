@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HeaderComponent } from '../../../shared/components/header/header.component';
 
 interface Paciente {
   id: number;
@@ -32,7 +33,7 @@ interface NotaMedica {
 @Component({
   selector: 'app-expediente',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HeaderComponent],
   templateUrl: './expediente.component.html',
   styleUrls: ['./expediente.component.scss']
 })

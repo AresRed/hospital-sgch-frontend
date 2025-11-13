@@ -29,6 +29,7 @@ interface Doctor extends Usuario {
     CommonModule, 
     FormsModule, 
     ReactiveFormsModule, // <-- AGREGAR ESTO
+    HeaderComponent,
     HeaderComponent
   ],
   templateUrl: './gestion-personal.component.html',
