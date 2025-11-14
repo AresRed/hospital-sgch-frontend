@@ -1,4 +1,4 @@
-<header class="bg-white shadow-sm border-b border-gray-200">
+<header *ngIf="showHeader" class="bg-white shadow-sm border-b border-gray-200">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between h-16">
       <!-- Logo y Navegación -->
@@ -40,9 +40,17 @@
                  class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 Mis Citas
               </a>
-              <a routerLink="/paciente/agendar-cita" 
+              <a routerLink="/paciente/agendar" 
                  class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 Agendar Cita
+              </a>
+              <a routerLink="/paciente/historial" 
+                 class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                Historial Médico
+              </a>
+              <a routerLink="/paciente/perfil" 
+                 class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                Mi Perfil
               </a>
             </div>
           </ng-container>
@@ -71,7 +79,7 @@
                 <div class="font-medium">{{ user?.nombre }}</div>
                 <div class="text-gray-500">{{ getRolDisplay(user?.rol || '') }}</div>
               </div>
-              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              <a routerLink="/paciente/perfil" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                 Mi Perfil
               </a>
               <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">

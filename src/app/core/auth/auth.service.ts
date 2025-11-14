@@ -1,33 +1,65 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs'; // Importar BehaviorSubject
 
-const BASE_URL = environment.apiUrl + '/auth/';
+const BASE_URL = environment.apiUrl + '/auth';
 const TOKEN_KEY = 'jwt_token';
 const USER_KEY = 'user_info';
+
+interface UserInfo {
+  id: number;
+  email: string;
+  rol: string;
+  nombre?: string; // Añadir nombre si es parte de la info del usuario
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private _currentUserInfo = new BehaviorSubject<UserInfo | null>(this.getUserInfoFromLocalStorage());
+  currentUserInfo: Observable<UserInfo | null> = this._currentUserInfo.asObservable();
 
   constructor(private http: HttpClient) {}
 
   login(credentials: any): Observable<any> {
-    // La ruta completa será: http://localhost:8080/api/auth/login
-    return this.http.post(BASE_URL + 'login', credentials);
+    return this.http.post<any>(`${BASE_URL}/login`, credentials).pipe(
+      tap(response => {
+        if (response && response.token) {
+          this.saveToken(response.token);
+          const userInfo: UserInfo = {
+            id: response.id,
+            email: response.email,
+            rol: response.rol,
+            nombre: response.nombre // Asumiendo que el nombre también viene en la respuesta
+          };
+          this.saveUserInfo(userInfo);
+          this._currentUserInfo.next(userInfo); // Emitir la nueva información del usuario
+        }
+      })
+    );
   }
 
   register(userData: any): Observable<any> {
-    // La ruta completa será: http://localhost:8080/api/auth/registro
-    return this.http.post(BASE_URL + 'registro', userData);
+    return this.http.post(`${BASE_URL}/registro`, userData);
   }
 
   logout(): void {
-    // La ruta completa será: http://localhost:8080/api/auth/logout
-    this.http.post(BASE_URL + 'logout', {}).subscribe();
-    localStorage.removeItem('jwt_token');
-    localStorage.removeItem('user_info');
+    this.http.post(`${BASE_URL}/logout`, {}).subscribe({
+      next: () => {
+        this.clearSession();
+      },
+      error: () => {
+        this.clearSession(); // Limpiar sesión incluso si hay error en el logout del backend
+      }
+    });
+  }
+
+  private clearSession(): void {
+    this.removeToken();
+    this.removeUserInfo();
+    this._currentUserInfo.next(null); // Emitir null al cerrar sesión
   }
 
   saveToken(token: string): void {
@@ -35,12 +67,13 @@ export class AuthService {
   }
 
   /**
-   * Guarda la información esencial del usuario (ID, rol, email) en el localStorage.
+   * Guarda la información esencial del usuario (ID, rol, email) en el localStorage
+   * y actualiza el BehaviorSubject para notificar a los suscriptores.
    * @param userInfo Objeto con la información del usuario.
    */
-  saveUserInfo(userInfo: { id: number, rol: string, email: string }): void {
-    // Usamos JSON.stringify para guardar el objeto complejo
+  saveUserInfo(userInfo: UserInfo): void {
     localStorage.setItem(USER_KEY, JSON.stringify(userInfo));
+    this._currentUserInfo.next(userInfo); // Notificar a los suscriptores del cambio
   }
   
   // Métodos de recuperación de datos (Útiles para Guards y Navegación)
@@ -49,13 +82,17 @@ export class AuthService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
-  getUserInfo(): any | null {
+  getUserInfo(): UserInfo | null {
+    const user = localStorage.getItem(USER_KEY);
+    return user ? JSON.parse(user) : null;
+  }
+
+  private getUserInfoFromLocalStorage(): UserInfo | null {
     const user = localStorage.getItem(USER_KEY);
     return user ? JSON.parse(user) : null;
   }
 
   isAuthenticated(): boolean {
-    // El usuario está autenticado si el token existe
     return !!this.getToken();
   }
 

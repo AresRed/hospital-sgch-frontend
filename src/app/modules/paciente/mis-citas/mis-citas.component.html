@@ -30,15 +30,7 @@
           >
             Todas
           </button>
-          <button 
-            (click)="filtroEstado = 'pendiente'"
-            [class]="filtroEstado === 'pendiente' ? 
-                    'bg-yellow-600 text-white' : 
-                    'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-            class="px-4 py-2 rounded-xl font-medium transition-all duration-200"
-          >
-            Pendientes
-          </button>
+         
           <button 
             (click)="filtroEstado = 'confirmada'"
             [class]="filtroEstado === 'confirmada' ? 
@@ -70,7 +62,7 @@
       </div>
       
       <a 
-        routerLink="/paciente/agendar-cita"
+        routerLink="/paciente/agendar"
         class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-sm hover:shadow-md flex items-center gap-3 group w-full lg:w-auto justify-center"
       >
         <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,8 +91,8 @@
                 </svg>
               </div>
               <div>
-                <span class="text-lg font-bold text-gray-800">{{ cita.fecha | date:'dd/MM/yyyy' }}</span>
-                <span class="text-lg font-semibold text-blue-600 ml-2">{{ cita.hora }}</span>
+                <span class="text-lg font-bold text-gray-800">{{ cita.fechaHora | date:'dd/MM/yyyy' }}</span>
+                <span class="text-lg font-semibold text-blue-600 ml-2">{{ cita.fechaHora | date:'HH:mm' }}</span>
               </div>
             </div>
             
@@ -119,8 +111,8 @@
                   </svg>
                 </div>
                 <div>
-                  <h3 class="text-lg font-semibold text-gray-800">{{ cita.doctor }}</h3>
-                  <p class="text-gray-600">{{ cita.especialidad }}</p>
+                  <h3 class="text-lg font-semibold text-gray-800">{{ cita.doctor.nombreCompleto }}</h3>
+                  <p class="text-gray-600">{{ cita.doctor.especialidadNombre }}</p>
                 </div>
               </div>
             </div>
@@ -144,7 +136,7 @@
         <div class="flex flex-col gap-3 lg:items-end">
           <div class="flex flex-col sm:flex-row lg:flex-col gap-2">
             <button 
-              *ngIf="cita.estado === 'pendiente' || cita.estado === 'confirmada'" 
+              *ngIf="cita.estado.toLowerCase() === 'pendiente' || cita.estado.toLowerCase() === 'confirmada'" 
               (click)="reprogramarCita(cita)"
               class="px-4 py-2.5 bg-white border border-blue-600 text-blue-600 rounded-xl hover:bg-blue-50 font-medium transition-colors flex items-center gap-2 group/btn"
             >
@@ -155,8 +147,8 @@
             </button>
             
             <button 
-              *ngIf="cita.estado === 'pendiente' || cita.estado === 'confirmada'" 
-              (click)="cancelarCita(cita)"
+              *ngIf="cita.estado.toLowerCase() === 'pendiente' || cita.estado.toLowerCase() === 'confirmada'" 
+              (click)="cancelarCita(cita.id)"
               class="px-4 py-2.5 bg-white border border-red-600 text-red-600 rounded-xl hover:bg-red-50 font-medium transition-colors flex items-center gap-2 group/btn"
             >
               <svg class="w-4 h-4 group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

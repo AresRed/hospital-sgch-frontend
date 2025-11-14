@@ -7,17 +7,8 @@ import { AgendaComponent } from './agenda/agenda.component';
 import { ExpedienteComponent } from './expediente/expediente.component';
 
 const routes: Routes = [
+  
   { path: 'agenda', component: AgendaComponent },
   { path: 'expediente/:id', component: ExpedienteComponent },
   { path: '', redirectTo: 'agenda', pathMatch: 'full' }
 ];
-@NgModule({
-  declarations: [],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    FormsModule,
-    RouterModule.forChild(routes)
-  ]
-})
-export class DoctorModule { }

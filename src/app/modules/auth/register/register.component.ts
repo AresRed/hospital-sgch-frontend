@@ -9,6 +9,7 @@ import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
 import { FloatLabelModule } from 'primeng/floatlabel';   
 import { CommonModule } from '@angular/common';
+import { MessageService } from '../../../core/services/message.service'; // Importar nuestro MessageService
 
 @Component({
   selector: 'app-register',
@@ -38,7 +39,8 @@ export class RegisterComponent implements OnInit {
   constructor(
     private fb: FormBuilder, 
     private authService: AuthService, 
-    private router: Router
+    private router: Router,
+    private messageService: MessageService // Inyectar nuestro MessageService
   ) { }
 
   ngOnInit(): void {
@@ -83,6 +85,7 @@ export class RegisterComponent implements OnInit {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
       this.errorMessage = 'Por favor, complete correctamente todos los campos requeridos.';
+      this.messageService.showError('Error de validación', this.errorMessage || 'Error desconocido'); // Mostrar error con MessageService
       return;
     }
 
@@ -93,6 +96,7 @@ export class RegisterComponent implements OnInit {
     const userData = {
       dni: formData.dni,
       nombre: formData.nombre,
+      apellido: formData.apellido, // Asegurarse de que el apellido se envíe si existe en el formulario
       email: formData.email,
       password: formData.password,
       rol: formData.rol,
@@ -103,12 +107,13 @@ export class RegisterComponent implements OnInit {
     this.authService.register(userData).subscribe({
       next: (response) => {
         this.isLoading = false;
-        alert('Registro exitoso. Se ha enviado un correo de verificación.');
+        this.messageService.showSuccess('Registro exitoso', 'Se ha enviado un correo de verificación.'); // Mostrar éxito con MessageService
         this.router.navigate(['/auth/login']); 
       },
       error: (err) => {
         this.isLoading = false;
         this.errorMessage = err.error?.message || 'Error al registrarse. Intente con otro email/DNI.';
+        this.messageService.showError('Error de registro', this.errorMessage || 'Error desconocido'); // Mostrar error con MessageService
       }
     });
   }

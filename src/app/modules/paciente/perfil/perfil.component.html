@@ -1,0 +1,69 @@
+<div class="min-h-screen bg-gray-50 p-4 md:p-6">
+  <div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">Mi Perfil</h1>
+      <p class="text-gray-600 mt-2">Actualiza tu información personal y de contacto</p>
+    </div>
+
+    <!-- Spinner de Carga -->
+    <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <p class="ml-4 text-gray-600">Cargando...</p>
+    </div>
+
+    <!-- Formulario de Perfil -->
+    <div *ngIf="!isLoading" class="bg-white rounded-lg shadow-sm p-6 md:p-8 border border-gray-200">
+      <form [formGroup]="perfilForm" (ngSubmit)="onSubmit()">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Nombre -->
+          <div class="p-float-label">
+            <input pInputText id="nombre" formControlName="nombre" class="w-full" />
+            <label for="nombre">Nombre</label>
+          </div>
+
+          <!-- Apellido -->
+          <div class="p-float-label">
+            <input pInputText id="apellido" formControlName="apellido" class="w-full" />
+            <label for="apellido">Apellido</label>
+          </div>
+
+          <!-- Email (deshabilitado) -->
+          <div class="p-float-label md:col-span-2">
+            <input pInputText id="email" formControlName="email" class="w-full" />
+            <label for="email">Email (no se puede cambiar)</label>
+          </div>
+
+          <!-- Teléfono -->
+          <div class="p-float-label">
+            <input pInputText id="telefono" formControlName="telefono" class="w-full" />
+            <label for="telefono">Teléfono</label>
+          </div>
+
+          <!-- Seguro Médico -->
+          <div class="p-float-label">
+            <input pInputText id="seguroMedico" formControlName="seguroMedico" class="w-full" />
+            <label for="seguroMedico">Seguro Médico</label>
+          </div>
+
+          <!-- Dirección -->
+          <div class="p-float-label md:col-span-2">
+            <input pInputText id="direccion" formControlName="direccion" class="w-full" />
+            <label for="direccion">Dirección</label>
+          </div>
+        </div>
+
+        <!-- Botón de Guardar -->
+        <div class="mt-8 text-right">
+          <button pButton 
+                  type="submit" 
+                  label="Guardar Cambios" 
+                  icon="pi pi-check"
+                  [disabled]="perfilForm.invalid || isLoading"
+                  class="p-button-primary"></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

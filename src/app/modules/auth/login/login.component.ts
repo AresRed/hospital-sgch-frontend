@@ -55,14 +55,10 @@ export class LoginComponent implements OnInit {
 
     this.loading = true; // Activar spinner
 
-    // 1. Llamar al servicio de autenticación con las credenciales
+    // Llamar al servicio de autenticación. El token y los datos del usuario se guardan automáticamente.
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
-        // La respuesta contiene el JWT, el rol y el ID
-        this.authService.saveToken(response.token);
-        this.authService.saveUserInfo({id: response.id, rol: response.rol, email: response.email});
-
-        // 2. Redirigir al dashboard según el rol
+        // Redirigir al dashboard según el rol
         this.redirectToRoleDashboard(response.rol);
       },
       error: (err) => {
@@ -87,7 +83,7 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/doctor/agenda']);
         break;
       case 'PACIENTE':
-        this.router.navigate(['/paciente/citas']);
+        this.router.navigate(['/paciente/mis-citas']);
         break;
       default:
         this.router.navigate(['/']); 

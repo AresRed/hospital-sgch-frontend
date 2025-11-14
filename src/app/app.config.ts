@@ -6,6 +6,7 @@ import { routes } from './app.routes';
 import { providePrimeNG } from 'primeng/config';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { jwtInterceptor } from './core/interceptors/jwt-interceptor';
+import { MessageService } from 'primeng/api'; // Importar MessageService de PrimeNG
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -23,6 +24,7 @@ export const appConfig: ApplicationConfig = {
     }),
     provideHttpClient(
       withInterceptors([jwtInterceptor])
-    )
+    ),
+    MessageService // Proveer MessageService de PrimeNG a nivel global
   ]
 };

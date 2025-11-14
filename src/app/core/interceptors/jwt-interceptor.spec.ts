@@ -1,7 +1,7 @@
-import { JwtInterceptor } from './jwt-interceptor';
+import { jwtInterceptor } from './jwt-interceptor';
 
-describe('JwtInterceptor', () => {
-  it('should create an instance', () => {
-    expect(new JwtInterceptor()).toBeTruthy();
+describe('jwtInterceptor', () => {
+  it('should be created', () => {
+    expect(jwtInterceptor).toBeTruthy();
   });
 });

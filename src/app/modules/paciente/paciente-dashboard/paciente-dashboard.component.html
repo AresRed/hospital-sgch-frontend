@@ -1,0 +1,26 @@
+<div class="flex min-h-screen">
+    <div class="w-64 bg-gray-800 text-white p-4">
+        <h1 class="text-xl font-bold mb-6">🏥 Paciente SGCH</h1>
+        <nav class="space-y-2">
+            <a routerLink="agendar" routerLinkActive="bg-blue-600" class="block p-2 rounded hover:bg-gray-700 transition">
+                📅 Agendar Cita
+            </a>
+            <a routerLink="mis-citas" routerLinkActive="bg-blue-600" class="block p-2 rounded hover:bg-gray-700 transition">
+                📋 Mis Citas
+            </a>
+            <a routerLink="historial" routerLinkActive="bg-blue-600" class="block p-2 rounded hover:bg-gray-700 transition">
+                📜 Historial Clínico
+            </a>
+            <a routerLink="perfil" routerLinkActive="bg-blue-600" class="block p-2 rounded hover:bg-gray-700 transition">
+                👤 Mi Perfil
+            </a>
+            <button class="w-full text-left p-2 rounded bg-red-600 hover:bg-red-700 transition">
+                ➡️ Cerrar Sesión
+            </button>
+        </nav>
+    </div>
+
+    <div class="flex-1 p-8 bg-gray-50">
+        <router-outlet></router-outlet>
+    </div>
+</div>

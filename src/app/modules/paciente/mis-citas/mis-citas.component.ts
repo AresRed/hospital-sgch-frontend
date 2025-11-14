@@ -1,17 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-
-interface Cita {
-  id: number;
-  doctor: string;
-  especialidad: string;
-  fecha: Date;
-  hora: string;
-  estado: string;
-  motivo: string;
-}
+import { RouterModule, Router } from '@angular/router'; // Importar Router
+import { PacienteService, Cita } from '../services/paciente.service'; // Importar PacienteService y Cita
+import { MessageService } from '../../../core/services/message.service'; // Importar nuestro MessageService
 
 @Component({
   selector: 'app-mis-citas',
@@ -23,47 +15,34 @@ interface Cita {
 export class MisCitasComponent implements OnInit {
   citas: Cita[] = [];
   filtroEstado: string = 'todas';
+  isLoading: boolean = false;
 
-  constructor() {}
+  constructor(
+    private pacienteService: PacienteService,
+    private messageService: MessageService,
+    private router: Router // Inyectar Router
+  ) {}
 
   ngOnInit() {
     this.cargarCitas();
   }
 
   cargarCitas() {
-    this.citas = [
-      {
-        id: 1,
-        doctor: 'Dr. Juan Pérez',
-        especialidad: 'Cardiología',
-        fecha: new Date('2024-01-20'),
-        hora: '09:00',
-        estado: 'confirmada',
-        motivo: 'Consulta de rutina'
+    this.isLoading = true;
+    this.pacienteService.getMisCitas().subscribe({
+      next: (data) => {
+        this.citas = data;
+        this.isLoading = false;
       },
-      {
-        id: 2,
-        doctor: 'Dra. Ana López',
-        especialidad: 'Pediatría',
-        fecha: new Date('2024-01-18'),
-        hora: '14:30',
-        estado: 'completada',
-        motivo: 'Control anual'
-      },
-      {
-        id: 3,
-        doctor: 'Dr. Carlos Ruiz',
-        especialidad: 'Medicina General',
-        fecha: new Date('2024-01-25'),
-        hora: '11:00',
-        estado: 'pendiente',
-        motivo: 'Dolor de cabeza persistente'
+      error: (err) => {
+        this.messageService.showError('Error', 'No se pudieron cargar sus citas.');
+        this.isLoading = false;
       }
-    ];
+    });
   }
 
   getEstadoBadgeClass(estado: string): string {
-    switch(estado) {
+    switch(estado.toLowerCase()) { // Convertir a minúsculas para consistencia
       case 'confirmada': return 'bg-green-100 text-green-800';
       case 'pendiente': return 'bg-yellow-100 text-yellow-800';
       case 'completada': return 'bg-blue-100 text-blue-800';
@@ -73,7 +52,7 @@ export class MisCitasComponent implements OnInit {
   }
 
   getBorderColor(estado: string): string {
-    switch(estado) {
+    switch(estado.toLowerCase()) { // Convertir a minúsculas para consistencia
       case 'confirmada': return 'border-l-green-500';
       case 'pendiente': return 'border-l-yellow-500';
       case 'completada': return 'border-l-blue-500';
@@ -82,37 +61,45 @@ export class MisCitasComponent implements OnInit {
     }
   }
 
-  getCitasFiltradas() {
+  getCitasFiltradas(): Cita[] {
     if (this.filtroEstado === 'todas') {
       return this.citas;
     }
-    return this.citas.filter(cita => cita.estado === this.filtroEstado);
+    return this.citas.filter(cita => cita.estado.toLowerCase() === this.filtroEstado);
   }
 
-  // Agrega estos métodos a tu clase MisCitasComponent
+  getCitasCountByEstado(estado: string): number {
+    return this.citas.filter(cita => cita.estado.toLowerCase() === estado).length;
+  }
 
-getCitasCountByEstado(estado: string): number {
-  return this.citas.filter(cita => cita.estado === estado).length;
-}
+  getProximaCita(): Cita | null {
+    const ahora = new Date();
+    const citasFuturas = this.citas
+      .filter(cita => new Date(cita.fechaHora) > ahora && cita.estado.toLowerCase() !== 'cancelada' && cita.estado.toLowerCase() !== 'completada')
+      .sort((a, b) => new Date(a.fechaHora).getTime() - new Date(b.fechaHora).getTime());
+    
+    return citasFuturas.length > 0 ? citasFuturas[0] : null;
+  }
 
-getProximaCita(): Cita | null {
-  const ahora = new Date();
-  const citasFuturas = this.citas
-    .filter(cita => new Date(cita.fecha) > ahora && cita.estado !== 'cancelada' && cita.estado !== 'completada')
-    .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
-  
-  return citasFuturas.length > 0 ? citasFuturas[0] : null;
-}
-
-  cancelarCita(cita: Cita) {
+  cancelarCita(citaId: number) {
     if (confirm('¿Estás seguro de que quieres cancelar esta cita?')) {
-      cita.estado = 'cancelada';
-      console.log('Cita cancelada:', cita);
+      this.isLoading = true;
+      this.pacienteService.cancelarCita(citaId).subscribe({
+        next: (response) => {
+          this.messageService.showSuccess('Cita Cancelada', response.mensaje);
+          this.cargarCitas(); // Recargar citas para actualizar la lista
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.messageService.showError('Error al cancelar', err.error?.mensaje || 'No se pudo cancelar la cita.');
+          this.isLoading = false;
+        }
+      });
     }
   }
 
   reprogramarCita(cita: Cita) {
-    console.log('Reprogramar cita:', cita);
-    // Lógica para reprogramar cita
+    // Navegar al componente de agendar cita con el ID de la cita para reprogramarla.
+    this.router.navigate(['/paciente/agendar', cita.id]);
   }
 }
