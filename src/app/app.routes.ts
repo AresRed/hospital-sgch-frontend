@@ -32,6 +32,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'gestion-personal', pathMatch: 'full' },
       { path: 'gestion-personal', loadComponent: () => import('./modules/administrador/gestion-personal/gestion-personal.component').then(m => m.GestionPersonalComponent) },
       { path: 'reportes', loadComponent: () => import('./modules/administrador/reportes/reportes.component').then(m => m.ReportesComponent) },
+      { path: 'especialidades', loadComponent: () => import('./modules/administrador/especialidades/especialidades.component').then(m => m.EspecialidadesComponent) },
     ]
   },
 

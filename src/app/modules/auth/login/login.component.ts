@@ -77,7 +77,7 @@ export class LoginComponent implements OnInit {
   private redirectToRoleDashboard(role: string): void {
     switch (role) {
       case 'ADMINISTRADOR':
-        this.router.navigate(['/admin/dashboard']);
+        this.router.navigate(['/admin/gestion-personal']);
         break;
       case 'DOCTOR':
         this.router.navigate(['/doctor/agenda']);

@@ -1,132 +1,230 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HeaderComponent } from '../../../shared/components/header/header.component';
+import { AdminService, EstadisticasResumen, ReporteGenerado, MetricaReporte  } from '../services/admin.service';
 
-interface Reporte {
-  id: number;
-  titulo: string;
-  descripcion: string;
-  tipo: string;
-  fechaGeneracion: Date;
-  descargado: boolean;
-}
 
 @Component({
   selector: 'app-reportes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HeaderComponent],
   templateUrl: './reportes.component.html',
   styleUrls: ['./reportes.component.scss']
 })
 export class ReportesComponent implements OnInit {
-  reportes: Reporte[] = [];
-  tiposReporte = [
-    { value: 'citas', label: 'Reporte de Citas' },
-    { value: 'usuarios', label: 'Reporte de Usuarios' },
-    { value: 'financiero', label: 'Reporte Financiero' },
-    { value: 'medicamentos', label: 'Reporte de Medicamentos' }
-  ];
-
+  reportes: ReporteGenerado[] = [];
+  estadisticas: EstadisticasResumen | null = null;
+  metricasDisponibles: MetricaReporte[] = [];
+  
   filtro = {
-    tipo: 'todos',
+    metrica: '',
     fechaInicio: '',
     fechaFin: ''
   };
 
-  constructor() {}
+  isLoading = false;
+  errorMessage = '';
+  successMessage = '';
+  imagenGenerada: string | null = null;
+
+  constructor(private adminService: AdminService) {}
 
   ngOnInit() {
-    this.cargarReportes();
+    this.cargarEstadisticas();
+    this.cargarMetricasDisponibles();
+    this.cargarReportesHistoricos();
   }
 
-  cargarReportes() {
-    this.reportes = [
-      {
-        id: 1,
-        titulo: 'Citas Mensuales',
-        descripcion: 'Reporte de todas las citas del mes actual',
-        tipo: 'citas',
-        fechaGeneracion: new Date('2024-01-15'),
-        descargado: true
+  cargarEstadisticas() {
+    this.isLoading = true;
+    this.adminService.obtenerResumenEstadisticas().subscribe({
+      next: (data) => {
+        this.estadisticas = data;
+        this.isLoading = false;
       },
-      {
-        id: 2,
-        titulo: 'Usuarios Registrados',
-        descripcion: 'Listado de usuarios registrados en el sistema',
-        tipo: 'usuarios',
-        fechaGeneracion: new Date('2024-01-10'),
-        descargado: false
-      },
-      {
-        id: 3,
-        titulo: 'Estado Financiero Trimestral',
-        descripcion: 'Reporte financiero del último trimestre',
-        tipo: 'financiero',
-        fechaGeneracion: new Date('2024-01-05'),
-        descargado: false
+      error: (error) => {
+        console.error('Error al cargar estadísticas:', error);
+        this.errorMessage = 'Error al cargar estadísticas del sistema';
+        this.isLoading = false;
       }
-    ];
+    });
   }
 
-  getTipoBadgeClass(tipo: string): string {
-    switch(tipo) {
-      case 'citas': return 'bg-blue-100 text-blue-800';
-      case 'usuarios': return 'bg-green-100 text-green-800';
-      case 'financiero': return 'bg-purple-100 text-purple-800';
-      case 'medicamentos': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+  cargarMetricasDisponibles() {
+    this.adminService.obtenerMetricasDisponibles().subscribe({
+      next: (metricas) => {
+        this.metricasDisponibles = metricas;
+      },
+      error: (error) => {
+        console.error('Error al cargar métricas:', error);
+        // Métricas por defecto en caso de error
+        this.metricasDisponibles = [
+          { 
+            value: 'cancelaciones', 
+            label: '📊 Tasa de Cancelación por Doctor', 
+            descripcion: 'Analiza las cancelaciones por médico' 
+          },
+          { 
+            value: 'citas_por_especialidad', 
+            label: '🏥 Citas por Especialidad', 
+            descripcion: 'Muestra citas realizadas por especialidad médica' 
+          }
+        ];
+      }
+    });
+  }
+
+  cargarReportesHistoricos() {
+    // Cargar reportes guardados en localStorage
+    const reportesGuardados = localStorage.getItem('reportes_generados');
+    if (reportesGuardados) {
+      this.reportes = JSON.parse(reportesGuardados);
     }
-  }
-
-  getTipoLabel(tipo: string): string {
-    const tipoObj = this.tiposReporte.find(t => t.value === tipo);
-    return tipoObj ? tipoObj.label : tipo;
   }
 
   generarReporte() {
-    // Validar filtros
-    if (this.filtro.tipo === 'todos') {
-      alert('Por favor selecciona un tipo de reporte');
+    if (!this.filtro.metrica) {
+      this.errorMessage = 'Por favor selecciona una métrica para el reporte';
+      this.clearMessages();
       return;
     }
 
-    if (!this.filtro.fechaInicio || !this.filtro.fechaFin) {
-      alert('Por favor selecciona las fechas de inicio y fin');
-      return;
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.imagenGenerada = null;
+
+    this.adminService.generarEstadisticas(this.filtro.metrica).subscribe({
+      next: (response: string) => {
+        console.log('✅ Reporte generado:', response);
+        
+        // Extraer la ruta de la imagen de la respuesta
+        const rutaImagen = this.extraerRutaImagen(response);
+        
+        const nuevoReporte = {
+          id: Date.now(),
+          titulo: this.getMetricaLabel(this.filtro.metrica),
+          descripcion: `Reporte generado el ${new Date().toLocaleDateString()}`,
+          tipo: this.filtro.metrica,
+          fechaGeneracion: new Date(),
+          descargado: false,
+          rutaImagen: rutaImagen,
+          metric: this.filtro.metrica
+        } as ReporteGenerado;
+
+        this.reportes.unshift(nuevoReporte);
+        this.guardarReportesEnLocalStorage();
+        
+        this.successMessage = '✅ Reporte generado exitosamente con Python';
+        this.isLoading = false;
+        this.clearMessages();
+
+        // Si hay imagen generada, mostrarla
+        if (rutaImagen) {
+          this.mostrarImagenGenerada(rutaImagen);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error al generar reporte:', error);
+        this.errorMessage = error.error || 'Error al generar el reporte con Python';
+        this.isLoading = false;
+        this.clearMessages();
+      }
+    });
+  }
+
+  descargarReporte(reporte: ReporteGenerado) {
+    this.isLoading = true;
+    
+    this.adminService.descargarGrafico(reporte.metric).subscribe({
+      next: (blob: Blob) => {
+        // Crear enlace de descarga
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reporte_${reporte.tipo}_${new Date().getTime()}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        // Marcar como descargado
+        reporte.descargado = true;
+        this.guardarReportesEnLocalStorage();
+        
+        this.successMessage = `📥 Reporte "${reporte.titulo}" descargado exitosamente`;
+        this.isLoading = false;
+        this.clearMessages();
+      },
+      error: (error) => {
+        console.error('Error al descargar reporte:', error);
+        this.errorMessage = 'Error al descargar el reporte';
+        this.isLoading = false;
+        this.clearMessages();
+      }
+    });
+  }
+
+  private extraerRutaImagen(response: string): string | null {
+    if (typeof response === 'string') {
+      const match = response.match(/Ruta: (.*\.png)/);
+      return match ? match[1] : null;
     }
-
-    // Generar nuevo reporte
-    const nuevoReporte: Reporte = {
-      id: this.reportes.length + 1,
-      titulo: `Reporte ${this.getTipoLabel(this.filtro.tipo)} - ${new Date().toLocaleDateString()}`,
-      descripcion: `Reporte generado para el período ${this.filtro.fechaInicio} al ${this.filtro.fechaFin}`,
-      tipo: this.filtro.tipo,
-      fechaGeneracion: new Date(),
-      descargado: false
-    };
-
-    this.reportes.unshift(nuevoReporte); // Agregar al inicio
-    
-    console.log('Reporte generado:', nuevoReporte);
-    alert('Reporte generado exitosamente');
+    return null;
   }
 
-  descargarReporte(reporte: Reporte) {
-    console.log('Descargando reporte:', reporte);
-    reporte.descargado = true;
-    
-    // Simular descarga
-    setTimeout(() => {
-      alert(`Reporte "${reporte.titulo}" descargado exitosamente`);
-    }, 500);
+  private mostrarImagenGenerada(rutaImagen: string) {
+    // En un entorno real, aquí cargarías la imagen desde el servidor
+    this.imagenGenerada = 'assets/images/reporte-generado.png'; // Imagen de ejemplo
+    this.successMessage += '. Gráfico generado con éxito.';
   }
 
-  // Métodos para las estadísticas
-  getReportesCountByTipo(tipo: string): number {
-    return this.reportes.filter(reporte => reporte.tipo === tipo).length;
+  getMetricaBadgeClass(metrica: string): string {
+    switch(metrica) {
+      case 'cancelaciones':
+        return 'bg-red-100 text-red-800 border border-red-200';
+      case 'citas_por_especialidad':
+        return 'bg-blue-100 text-blue-800 border border-blue-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border border-gray-200';
+    }
+  }
+
+  getMetricaLabel(metrica: string): string {
+    const metricaObj = this.metricasDisponibles.find(m => m.value === metrica);
+    return metricaObj ? metricaObj.label : metrica;
+  }
+
+  getMetricaDescripcion(metrica: string): string {
+    const metricaObj = this.metricasDisponibles.find(m => m.value === metrica);
+    return metricaObj ? metricaObj.descripcion : '';
+  }
+
+  getReportesCountByMetrica(metrica: string): number {
+    return this.reportes.filter(reporte => reporte.tipo === metrica).length;
   }
 
   getReportesDescargados(): number {
     return this.reportes.filter(reporte => reporte.descargado).length;
+  }
+
+  guardarReportesEnLocalStorage() {
+    localStorage.setItem('reportes_generados', JSON.stringify(this.reportes));
+  }
+
+  clearMessages(): void {
+    setTimeout(() => {
+      this.errorMessage = '';
+      this.successMessage = '';
+    }, 5000);
+  }
+
+  limpiarFiltros() {
+    this.filtro = {
+      metrica: '',
+      fechaInicio: '',
+      fechaFin: ''
+    };
+    this.imagenGenerada = null;
   }
 }

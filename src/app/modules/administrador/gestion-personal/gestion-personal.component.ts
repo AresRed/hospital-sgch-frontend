@@ -3,24 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms'; // <-- Agregar ReactiveFormsModule
 import { HeaderComponent } from '../../../shared/components/header/header.component';
-
-interface Usuario {
-  id?: number;
-  username: string;
-  email: string;
-  nombre: string;
-  apellido: string;
-  telefono: string;
-  rol: string;
-  activo: boolean;
-}
-
-interface Doctor extends Usuario {
-  especialidad: string;
-  licencia: string;
-  horarioInicio: string;
-  horarioFin: string;
-}
+import { AdminService, Usuario, Paciente, Doctor, RegistroPersonalRequest, Especialidad } from '../services/admin.service';
 
 @Component({
   selector: 'app-gestion-personal',
@@ -35,266 +18,414 @@ interface Doctor extends Usuario {
   styleUrls: ['./gestion-personal.component.scss']
 })
 export class GestionPersonalComponent implements OnInit {
-  personalForm: FormGroup;
   doctorForm: FormGroup;
+  adminForm: FormGroup;
+  pacienteForm: FormGroup;
+  
   usuarios: Usuario[] = [];
   doctores: Doctor[] = [];
-  especialidades: string[] = ['MEDICINA_GENERAL', 'CARDIOLOGIA', 'PEDIATRIA', 'GINECOLOGIA', 'TRAUMATOLOGIA'];
+  administradores: Usuario[] = [];
+  pacientes: Paciente[] = [];
+  especialidades: Especialidad[] = [];
   
-  showModal = false;
   showDoctorModal = false;
-  editMode = false;
-  selectedUsuario: Usuario | null = null;
-  selectedDoctor: Doctor | null = null;
-  activeTab: 'usuarios' | 'doctores' = 'usuarios';
+  showAdminModal = false;
+  showPacienteModal = false;
+  activeTab: 'usuarios' | 'doctores' | 'administradores' | 'pacientes' = 'usuarios';
   searchTerm = '';
+  isLoading = false;
+  errorMessage = '';
+  successMessage = '';
 
-  constructor(private fb: FormBuilder) {
-    // Inicializar formulario de usuario
-    this.personalForm = this.fb.group({
-      username: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
+  constructor(private fb: FormBuilder, private adminService: AdminService) {
+    // Formulario para registrar Doctores
+    this.doctorForm = this.fb.group({
+      dni: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
       nombre: ['', Validators.required],
       apellido: ['', Validators.required],
-      telefono: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
-      rol: ['DOCTOR', Validators.required],
-      activo: [true]
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      telefono: [''],
+      especialidadId: ['', Validators.required],
+      horarioAtencionInicio: ['08:00', Validators.required],
+      horarioAtencionFin: ['18:00', Validators.required],
+      duracionCitaMinutos: [30, [Validators.required, Validators.min(15), Validators.max(120)]]
+    });
+    // Formulario para registrar Administradores
+    this.adminForm = this.fb.group({
+      dni: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
+      nombre: ['', Validators.required],
+      apellido: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
 
-    // Inicializar formulario de doctor
-    this.doctorForm = this.fb.group({
-      username: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
+    // Formulario para registrar Pacientes
+    this.pacienteForm = this.fb.group({
+      dni: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
       nombre: ['', Validators.required],
       apellido: ['', Validators.required],
-      telefono: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
-      especialidad: ['', Validators.required],
-      licencia: ['', Validators.required],
-      horarioInicio: ['08:00', Validators.required],
-      horarioFin: ['18:00', Validators.required],
-      activo: [true]
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      seguroMedico: ['']
     });
   }
 
   ngOnInit(): void {
     this.loadUsuarios();
     this.loadDoctores();
+    this.loadAdministradores();
+    this.loadPacientes();
+    this.loadEspecialidades();
   }
 
+  // =================== CARGA DE DATOS ===================
+
   loadUsuarios(): void {
-    // Datos de ejemplo para probar
-    this.usuarios = [
-      {
-        id: 1,
-        username: 'admin',
-        email: 'admin@hospital.com',
-        nombre: 'Juan',
-        apellido: 'Pérez',
-        telefono: '123456789',
-        rol: 'ADMIN',
-        activo: true
+    this.isLoading = true;
+    this.adminService.obtenerTodosLosUsuarios().subscribe({
+      next: (data) => {
+        this.usuarios = data;
+        this.isLoading = false;
       },
-      {
-        id: 2,
-        username: 'maria.garcia',
-        email: 'maria@hospital.com',
-        nombre: 'María',
-        apellido: 'García',
-        telefono: '987654321',
-        rol: 'PACIENTE',
-        activo: true
+      error: (error) => {
+        console.error('Error al cargar usuarios:', error);
+        this.errorMessage = 'Error al cargar la lista de usuarios';
+        this.isLoading = false;
       }
-    ];
+    });
   }
 
   loadDoctores(): void {
-    // Datos de ejemplo para probar
-    this.doctores = [
-      {
-        id: 3,
-        username: 'dr.lopez',
-        email: 'lopez@hospital.com',
-        nombre: 'Carlos',
-        apellido: 'López',
-        telefono: '555666777',
-        rol: 'DOCTOR',
-        activo: true,
-        especialidad: 'CARDIOLOGIA',
-        licencia: 'LIC-12345',
-        horarioInicio: '08:00',
-        horarioFin: '16:00'
+    this.isLoading = true;
+    this.adminService.obtenerTodosLosDoctores().subscribe({
+      next: (data) => {
+        this.doctores = data;
+        this.isLoading = false;
       },
-      {
-        id: 4,
-        username: 'dra.martinez',
-        email: 'martinez@hospital.com',
-        nombre: 'Ana',
-        apellido: 'Martínez',
-        telefono: '444555666',
-        rol: 'DOCTOR',
-        activo: true,
-        especialidad: 'PEDIATRIA',
-        licencia: 'LIC-67890',
-        horarioInicio: '09:00',
-        horarioFin: '17:00'
+      error: (error) => {
+        console.error('Error al cargar doctores:', error);
+        this.errorMessage = 'Error al cargar la lista de doctores';
+        this.isLoading = false;
       }
-    ];
+    });
   }
 
-  openModal(): void {
-    this.editMode = false;
-    this.personalForm.reset({ rol: 'DOCTOR', activo: true });
-    this.showModal = true;
+  loadAdministradores(): void {
+    this.isLoading = true;
+    this.adminService.obtenerUsuariosPorRol('ADMINISTRADOR').subscribe({
+      next: (data) => {
+        this.administradores = data;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar administradores:', error);
+        this.errorMessage = 'Error al cargar la lista de administradores';
+        this.isLoading = false;
+      }
+    });
   }
+
+  loadPacientes(): void {
+    this.isLoading = true;
+    this.adminService.obtenerTodosLosPacientes().subscribe({
+      next: (data) => {
+        this.pacientes = data;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar pacientes:', error);
+        this.errorMessage = 'Error al cargar la lista de pacientes';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadEspecialidades(): void {
+    this.adminService.obtenerEspecialidades().subscribe({
+      next: (data) => {
+        this.especialidades = data;
+        console.log('Especialidades cargadas:', data);
+      },
+      error: (error) => {
+        console.error('Error al cargar especialidades:', error);
+        // Si falla, usar especialidades por defecto temporalmente
+        this.especialidades = [
+          { id: 1, nombre: 'Cardiología' },
+          { id: 2, nombre: 'Pediatría' },
+          { id: 3, nombre: 'Ginecología' },
+          { id: 4, nombre: 'Traumatología' },
+          { id: 5, nombre: 'Medicina General' }
+        ];
+      }
+    });
+  }
+
+  // =================== MODALES DOCTOR ===================
 
   openDoctorModal(): void {
-    this.editMode = false;
-    this.doctorForm.reset({ 
-      horarioInicio: '08:00', 
-      horarioFin: '18:00', 
-      activo: true 
-    });
+    this.doctorForm.reset();
     this.showDoctorModal = true;
+    this.errorMessage = '';
+    this.successMessage = '';
   }
 
-  editUsuario(usuario: Usuario): void {
-    this.editMode = true;
-    this.selectedUsuario = usuario;
-    this.personalForm.patchValue(usuario);
-    // Remover validación de password en edición
-    this.personalForm.get('password')?.clearValidators();
-    this.personalForm.get('password')?.updateValueAndValidity();
-    this.showModal = true;
-  }
-
-  editDoctor(doctor: Doctor): void {
-    this.editMode = true;
-    this.selectedDoctor = doctor;
-    this.doctorForm.patchValue(doctor);
-    // Remover validación de password en edición
-    this.doctorForm.get('password')?.clearValidators();
-    this.doctorForm.get('password')?.updateValueAndValidity();
-    this.showDoctorModal = true;
-  }
-
-  saveUsuario(): void {
-    if (this.personalForm.valid) {
-      const data = this.personalForm.value;
-      
-      if (this.editMode && this.selectedUsuario) {
-        // Actualizar usuario existente
-        const index = this.usuarios.findIndex(u => u.id === this.selectedUsuario!.id);
-        if (index !== -1) {
-          this.usuarios[index] = { ...this.selectedUsuario, ...data };
-        }
-        console.log('Actualizar usuario:', data);
-      } else {
-        // Crear nuevo usuario
-        const newUsuario: Usuario = {
-          ...data,
-          id: Math.max(...this.usuarios.map(u => u.id || 0)) + 1
-        };
-        this.usuarios.push(newUsuario);
-        console.log('Crear usuario:', data);
-      }
-      
-      this.closeModal();
-    } else {
-      // Marcar todos los campos como touched para mostrar errores
-      Object.keys(this.personalForm.controls).forEach(key => {
-        this.personalForm.get(key)?.markAsTouched();
-      });
-    }
+  closeDoctorModal(): void {
+    this.showDoctorModal = false;
+    this.doctorForm.reset();
   }
 
   saveDoctor(): void {
     if (this.doctorForm.valid) {
-      const data = this.doctorForm.value;
+      const formData = this.doctorForm.value;
       
-      if (this.editMode && this.selectedDoctor) {
-        // Actualizar doctor existente
-        const index = this.doctores.findIndex(d => d.id === this.selectedDoctor!.id);
-        if (index !== -1) {
-          this.doctores[index] = { ...this.selectedDoctor, ...data };
+      const request: RegistroPersonalRequest = {
+        dni: formData.dni,
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        email: formData.email,
+        password: formData.password,
+        telefono: formData.telefono,
+        rol: 'DOCTOR',
+        especialidadId: formData.especialidadId,
+        horarioAtencionInicio: formData.horarioAtencionInicio,
+        horarioAtencionFin: formData.horarioAtencionFin,
+        duracionCitaMinutos: formData.duracionCitaMinutos
+      };
+
+      console.log('Request Doctor:', request);
+
+      this.isLoading = true;
+      this.errorMessage = '';
+      
+      this.adminService.registrarPersonal(request).subscribe({
+        next: (response) => {
+          console.log('✅ Doctor registrado:', response);
+          this.successMessage = 'Doctor registrado exitosamente';
+          this.isLoading = false;
+          this.closeDoctorModal();
+          this.loadDoctores();
+          this.loadUsuarios();
+          this.clearMessages();
+        },
+        error: (error) => {
+          console.error('❌ Error al registrar doctor:', error);
+          this.errorMessage = error.error || 'Error al registrar doctor';
+          this.isLoading = false;
+          this.clearMessages();
         }
-        console.log('Actualizar doctor:', data);
-      } else {
-        // Crear nuevo doctor
-        const newDoctor: Doctor = {
-          ...data,
-          id: Math.max(...this.doctores.map(d => d.id || 0)) + 1,
-          rol: 'DOCTOR'
-        };
-        this.doctores.push(newDoctor);
-        console.log('Crear doctor:', data);
-      }
-      
-      this.closeDoctorModal();
+      });
     } else {
-      // Marcar todos los campos como touched para mostrar errores
       Object.keys(this.doctorForm.controls).forEach(key => {
         this.doctorForm.get(key)?.markAsTouched();
       });
     }
   }
 
-  deleteUsuario(id: number): void {
-    if (confirm('¿Está seguro de eliminar este usuario?')) {
-      // Eliminar de la lista correspondiente
-      if (this.activeTab === 'usuarios') {
-        this.usuarios = this.usuarios.filter(u => u.id !== id);
-      } else {
-        this.doctores = this.doctores.filter(d => d.id !== id);
-      }
-      console.log('Eliminar usuario:', id);
+  // =================== MODALES ADMINISTRADOR ===================
+
+  openAdminModal(): void {
+    this.adminForm.reset();
+    this.showAdminModal = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  closeAdminModal(): void {
+    this.showAdminModal = false;
+    this.adminForm.reset();
+  }
+
+  saveAdmin(): void {
+    if (this.adminForm.valid) {
+      const formData = this.adminForm.value;
+      
+      const request: RegistroPersonalRequest = {
+        dni: formData.dni,
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        email: formData.email,
+        password: formData.password,
+        rol: 'ADMINISTRADOR'
+      };
+
+      this.isLoading = true;
+      this.errorMessage = '';
+      
+      this.adminService.registrarPersonal(request).subscribe({
+        next: (response) => {
+          console.log('✅ Administrador registrado:', response);
+          this.successMessage = 'Administrador registrado exitosamente';
+          this.isLoading = false;
+          this.closeAdminModal();
+          this.loadAdministradores();
+          this.loadUsuarios();
+          this.clearMessages();
+        },
+        error: (error) => {
+          console.error('❌ Error al registrar administrador:', error);
+          this.errorMessage = error.error || 'Error al registrar administrador';
+          this.isLoading = false;
+          this.clearMessages();
+        }
+      });
+    } else {
+      Object.keys(this.adminForm.controls).forEach(key => {
+        this.adminForm.get(key)?.markAsTouched();
+      });
     }
   }
 
+  // =================== MODALES PACIENTE ===================
+
+  openPacienteModal(): void {
+    this.pacienteForm.reset();
+    this.showPacienteModal = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  closePacienteModal(): void {
+    this.showPacienteModal = false;
+    this.pacienteForm.reset();
+  }
+
+  savePaciente(): void {
+    if (this.pacienteForm.valid) {
+      const formData = this.pacienteForm.value;
+      
+      const request: RegistroPersonalRequest = {
+        dni: formData.dni,
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        email: formData.email,
+        password: formData.password,
+        rol: 'PACIENTE',
+        seguroMedico: formData.seguroMedico
+      };
+
+      this.isLoading = true;
+      this.errorMessage = '';
+      
+      this.adminService.registrarPersonal(request).subscribe({
+        next: (response) => {
+          console.log('✅ Paciente registrado:', response);
+          this.successMessage = 'Paciente registrado exitosamente';
+          this.isLoading = false;
+          this.closePacienteModal();
+          this.loadPacientes();
+          this.loadUsuarios();
+          this.clearMessages();
+        },
+        error: (error) => {
+          console.error('❌ Error al registrar paciente:', error);
+          this.errorMessage = error.error || 'Error al registrar paciente';
+          this.isLoading = false;
+          this.clearMessages();
+        }
+      });
+    } else {
+      Object.keys(this.pacienteForm.controls).forEach(key => {
+        this.pacienteForm.get(key)?.markAsTouched();
+      });
+    }
+  }
+
+  // =================== ELIMINAR USUARIO ===================
+
+  deleteUsuario(id: number): void {
+    if (confirm('¿Está seguro de eliminar este usuario? Esta acción no se puede deshacer.')) {
+      this.isLoading = true;
+      this.adminService.eliminarUsuario(id).subscribe({
+        next: (response) => {
+          this.successMessage = 'Usuario eliminado exitosamente';
+          this.isLoading = false;
+          this.usuarios = this.usuarios.filter(u => u.id !== id);
+          this.doctores = this.doctores.filter(d => d.id !== id);
+          this.administradores = this.administradores.filter(a => a.id !== id);
+          this.pacientes = this.pacientes.filter(p => p.id !== id);
+          this.clearMessages();
+        },
+        error: (error) => {
+          this.errorMessage = 'Error al eliminar usuario';
+          this.isLoading = false;
+          this.clearMessages();
+        }
+      });
+    }
+  }
+
+  // =================== TOGGLE ACTIVO ===================
+
   toggleUsuarioActivo(usuario: Usuario): void {
-    usuario.activo = !usuario.activo;
-    console.log('Toggle activo:', usuario);
+    const nuevoEstado = !usuario.activo;
+    this.adminService.actualizarEstadoUsuario(usuario.id, nuevoEstado).subscribe({
+      next: (response) => {
+        usuario.activo = nuevoEstado;
+        this.successMessage = `Usuario ${nuevoEstado ? 'activado' : 'desactivado'} exitosamente`;
+        this.clearMessages();
+      },
+      error: (error) => {
+        this.errorMessage = 'Error al actualizar estado del usuario';
+        this.clearMessages();
+      }
+    });
   }
 
-  closeModal(): void {
-    this.showModal = false;
-    this.personalForm.reset();
-    this.selectedUsuario = null;
-    // Restaurar validación de password
-    this.personalForm.get('password')?.setValidators(Validators.required);
-    this.personalForm.get('password')?.updateValueAndValidity();
-  }
-
-  closeDoctorModal(): void {
-    this.showDoctorModal = false;
-    this.doctorForm.reset();
-    this.selectedDoctor = null;
-    // Restaurar validación de password
-    this.doctorForm.get('password')?.setValidators(Validators.required);
-    this.doctorForm.get('password')?.updateValueAndValidity();
-  }
+  // =================== FILTROS ===================
 
   get filteredUsuarios(): Usuario[] {
     if (!this.searchTerm) return this.usuarios;
-    
     const term = this.searchTerm.toLowerCase();
-    return this.usuarios.filter(u => 
+    return this.usuarios.filter(u =>
       u.nombre.toLowerCase().includes(term) ||
       u.apellido.toLowerCase().includes(term) ||
       u.email.toLowerCase().includes(term) ||
-      u.username.toLowerCase().includes(term)
+      u.dni.includes(term)
     );
   }
 
   get filteredDoctores(): Doctor[] {
     if (!this.searchTerm) return this.doctores;
-    
     const term = this.searchTerm.toLowerCase();
-    return this.doctores.filter(d => 
+    return this.doctores.filter(d =>
       d.nombre.toLowerCase().includes(term) ||
       d.apellido.toLowerCase().includes(term) ||
-      d.especialidad.toLowerCase().includes(term)
+      d.email.toLowerCase().includes(term) ||
+      d.dni.includes(term) ||
+      (d.especialidadNombre && d.especialidadNombre.toLowerCase().includes(term))
     );
+  }
+
+  get filteredAdministradores(): Usuario[] {
+    if (!this.searchTerm) return this.administradores;
+    const term = this.searchTerm.toLowerCase();
+    return this.administradores.filter(a =>
+      a.nombre.toLowerCase().includes(term) ||
+      a.apellido.toLowerCase().includes(term) ||
+      a.email.toLowerCase().includes(term) ||
+      a.dni.includes(term)
+    );
+  }
+
+  get filteredPacientes(): Paciente[] {
+    if (!this.searchTerm) return this.pacientes;
+    const term = this.searchTerm.toLowerCase();
+    return this.pacientes.filter(p =>
+      p.nombre.toLowerCase().includes(term) ||
+      p.apellido.toLowerCase().includes(term) ||
+      p.email.toLowerCase().includes(term) ||
+      p.dni.includes(term) ||
+      (p.seguroMedico && p.seguroMedico.toLowerCase().includes(term))
+    );
+  }
+
+  // =================== UTILIDADES ===================
+
+  clearMessages(): void {
+    setTimeout(() => {
+      this.errorMessage = '';
+      this.successMessage = '';
+    }, 5000);
   }
 }

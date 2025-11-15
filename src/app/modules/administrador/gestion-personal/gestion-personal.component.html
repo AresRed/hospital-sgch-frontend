@@ -1,9 +1,28 @@
+<app-header></app-header>
+
 <div class="min-h-screen bg-gray-50 p-6">
   <div class="max-w-7xl mx-auto">
+    
     <!-- Header -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900">Gestión de Personal</h1>
-      <p class="text-gray-600 mt-2">Administra usuarios y doctores del sistema</p>
+      <p class="text-gray-600 mt-2">Administra usuarios, doctores, pacientes y administradores del sistema</p>
+    </div>
+
+    <!-- Mensajes de éxito/error -->
+    <div *ngIf="successMessage" class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+      <span class="block sm:inline">{{ successMessage }}</span>
+    </div>
+    <div *ngIf="errorMessage" class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+      <span class="block sm:inline">{{ errorMessage }}</span>
+    </div>
+
+    <!-- Loader -->
+    <div *ngIf="isLoading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg shadow-xl">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p class="mt-4 text-gray-600">Cargando...</p>
+      </div>
     </div>
 
     <!-- Tabs -->
@@ -12,14 +31,54 @@
         <button
           (click)="activeTab = 'usuarios'"
           [class]="activeTab === 'usuarios' ? 'border-blue-500 text-blue-600 border-b-2' : 'border-transparent text-gray-500 border-b-2'"
-          class="whitespace-nowrap py-4 px-1 font-medium text-sm hover:text-blue-600 hover:border-blue-300">
-          Usuarios
+          class="whitespace-nowrap py-4 px-1 font-medium text-sm hover:text-blue-600 hover:border-blue-300 transition-all">
+          <span class="flex items-center">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            Todos los Usuarios
+            <span class="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ usuarios.length }}</span>
+          </span>
         </button>
+        
         <button
           (click)="activeTab = 'doctores'"
           [class]="activeTab === 'doctores' ? 'border-blue-500 text-blue-600 border-b-2' : 'border-transparent text-gray-500 border-b-2'"
-          class="whitespace-nowrap py-4 px-1 font-medium text-sm hover:text-blue-600 hover:border-blue-300">
-          Doctores
+          class="whitespace-nowrap py-4 px-1 font-medium text-sm hover:text-blue-600 hover:border-blue-300 transition-all">
+          <span class="flex items-center">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Doctores
+            <span class="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ doctores.length }}</span>
+          </span>
+        </button>
+
+        <button
+          (click)="activeTab = 'pacientes'"
+          [class]="activeTab === 'pacientes' ? 'border-blue-500 text-blue-600 border-b-2' : 'border-transparent text-gray-500 border-b-2'"
+          class="whitespace-nowrap py-4 px-1 font-medium text-sm hover:text-blue-600 hover:border-blue-300 transition-all">
+          <span class="flex items-center">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Pacientes
+            <span class="ml-2 bg-teal-100 text-teal-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ pacientes.length }}</span>
+          </span>
+        </button>
+        
+        <button
+          (click)="activeTab = 'administradores'"
+          [class]="activeTab === 'administradores' ? 'border-blue-500 text-blue-600 border-b-2' : 'border-transparent text-gray-500 border-b-2'"
+          class="whitespace-nowrap py-4 px-1 font-medium text-sm hover:text-blue-600 hover:border-blue-300 transition-all">
+          <span class="flex items-center">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Administradores
+            <span class="ml-2 bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ administradores.length }}</span>
+          </span>
         </button>
       </nav>
     </div>
@@ -30,7 +89,7 @@
         <input
           type="text"
           [(ngModel)]="searchTerm"
-          placeholder="Buscar..."
+          placeholder="Buscar por nombre, apellido, email o DNI..."
           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
         <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -38,33 +97,46 @@
       </div>
       
       <button
-        *ngIf="activeTab === 'usuarios'"
-        (click)="openModal()"
-        class="ml-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
+        *ngIf="activeTab === 'doctores'"
+        (click)="openDoctorModal()"
+        class="ml-4 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center shadow-md">
         <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Nuevo Usuario
+        Registrar Doctor
       </button>
 
       <button
-        *ngIf="activeTab === 'doctores'"
-        (click)="openDoctorModal()"
-        class="ml-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center">
+        *ngIf="activeTab === 'pacientes'"
+        (click)="openPacienteModal()"
+        class="ml-4 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition flex items-center shadow-md">
         <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Nuevo Doctor
+        Registrar Paciente
+      </button>
+
+      <button
+        *ngIf="activeTab === 'administradores'"
+        (click)="openAdminModal()"
+        class="ml-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center shadow-md">
+        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Registrar Administrador
       </button>
     </div>
 
-    <!-- Usuarios Table -->
+    <!-- ========================================== -->
+    <!-- TABLA: TODOS LOS USUARIOS -->
+    <!-- ========================================== -->
     <div *ngIf="activeTab === 'usuarios'" class="bg-white rounded-lg shadow overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DNI</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
@@ -72,45 +144,48 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let usuario of filteredUsuarios" class="hover:bg-gray-50">
+          <tr *ngFor="let usuario of filteredUsuarios" class="hover:bg-gray-50 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="h-10 w-10 flex-shrink-0">
-                  <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                  <div [ngClass]="{
+                    'bg-blue-500': usuario.rol === 'PACIENTE',
+                    'bg-green-500': usuario.rol === 'DOCTOR',
+                    'bg-purple-500': usuario.rol === 'ADMINISTRADOR'
+                  }" class="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold">
                     {{ usuario.nombre.charAt(0) }}{{ usuario.apellido.charAt(0) }}
                   </div>
                 </div>
                 <div class="ml-4">
                   <div class="text-sm font-medium text-gray-900">{{ usuario.nombre }} {{ usuario.apellido }}</div>
-                  <div class="text-sm text-gray-500">{{ '@' + usuario.username }}</div>
                 </div>
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ usuario.email }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ usuario.telefono }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ usuario.dni }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ usuario.telefono || 'N/A' }}</td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+              <span [ngClass]="{
+                'bg-blue-100 text-blue-800': usuario.rol === 'PACIENTE',
+                'bg-green-100 text-green-800': usuario.rol === 'DOCTOR',
+                'bg-purple-100 text-purple-800': usuario.rol === 'ADMINISTRADOR'
+              }" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
                 {{ usuario.rol }}
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <button
                 (click)="toggleUsuarioActivo(usuario)"
-                [class]="usuario.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer">
+                [class]="usuario.activo ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 hover:bg-red-200'"
+                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer transition-colors">
                 {{ usuario.activo ? 'Activo' : 'Inactivo' }}
               </button>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <button
-                (click)="editUsuario(usuario)"
-                class="text-blue-600 hover:text-blue-900 mr-3">
-                Editar
-              </button>
-              <button
-                (click)="deleteUsuario(usuario.id!)"
-                class="text-red-600 hover:text-red-900">
-                Eliminar
+                (click)="deleteUsuario(usuario.id)"
+                class="text-red-600 hover:text-red-900 transition-colors">
+                🗑️ Eliminar
               </button>
             </td>
           </tr>
@@ -118,25 +193,31 @@
       </table>
 
       <div *ngIf="filteredUsuarios.length === 0" class="text-center py-12">
-        <p class="text-gray-500">No se encontraron usuarios</p>
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <p class="text-gray-500 mt-4">No se encontraron usuarios</p>
       </div>
     </div>
 
-    <!-- Doctores Table -->
+    <!-- ========================================== -->
+    <!-- TABLA: DOCTORES -->
+    <!-- ========================================== -->
     <div *ngIf="activeTab === 'doctores'" class="bg-white rounded-lg shadow overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Especialidad</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Licencia</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DNI</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horario</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let doctor of filteredDoctores" class="hover:bg-gray-50">
+          <tr *ngFor="let doctor of filteredDoctores" class="hover:bg-gray-50 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="h-10 w-10 flex-shrink-0">
@@ -146,36 +227,39 @@
                 </div>
                 <div class="ml-4">
                   <div class="text-sm font-medium text-gray-900">Dr(a). {{ doctor.nombre }} {{ doctor.apellido }}</div>
-                  <div class="text-sm text-gray-500">{{ doctor.email }}</div>
+                  <div class="text-sm text-gray-500">{{ doctor.telefono || 'N/A' }}</div>
                 </div>
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                {{ doctor.especialidad.replace('_', ' ') }}
+                {{ doctor.especialidad?.nombre || doctor.especialidadNombre || 'N/A' }}
               </span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ doctor.licencia }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ doctor.dni }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ doctor.email }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ doctor.horarioInicio }} - {{ doctor.horarioFin }}
+              <div *ngIf="doctor.horarioAtencionInicio && doctor.horarioAtencionFin">
+                {{ doctor.horarioAtencionInicio }} - {{ doctor.horarioAtencionFin }}
+                <div class="text-xs text-gray-400" *ngIf="doctor.duracionCitaMinutos">
+                  ({{ doctor.duracionCitaMinutos }} min/cita)
+                </div>
+              </div>
+              <span *ngIf="!doctor.horarioAtencionInicio" class="text-gray-400">No asignado</span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span
-                [class]="doctor.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+              <button
+                (click)="toggleUsuarioActivo(doctor)"
+                [class]="doctor.activo ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 hover:bg-red-200'"
+                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer transition-colors">
                 {{ doctor.activo ? 'Activo' : 'Inactivo' }}
-              </span>
+              </button>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <button
-                (click)="editDoctor(doctor)"
-                class="text-blue-600 hover:text-blue-900 mr-3">
-                Editar
-              </button>
-              <button
-                (click)="deleteUsuario(doctor.id!)"
-                class="text-red-600 hover:text-red-900">
-                Eliminar
+                (click)="deleteUsuario(doctor.id)"
+                class="text-red-600 hover:text-red-900 transition-colors">
+                🗑️ Eliminar
               </button>
             </td>
           </tr>
@@ -183,129 +267,153 @@
       </table>
 
       <div *ngIf="filteredDoctores.length === 0" class="text-center py-12">
-        <p class="text-gray-500">No se encontraron doctores</p>
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p class="text-gray-500 mt-4">No se encontraron doctores</p>
       </div>
     </div>
+
+    <!-- ========================================== -->
+    <!-- TABLA: PACIENTES -->
+    <!-- ========================================== -->
+    <div *ngIf="activeTab === 'pacientes'" class="bg-white rounded-lg shadow overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paciente</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DNI</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seguro Médico</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let paciente of filteredPacientes" class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="h-10 w-10 flex-shrink-0">
+                  <div class="h-10 w-10 rounded-full bg-teal-500 flex items-center justify-center text-white font-semibold">
+                    {{ paciente.nombre.charAt(0) }}{{ paciente.apellido.charAt(0) }}
+                  </div>
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">{{ paciente.nombre }} {{ paciente.apellido }}</div>
+                  <div class="text-sm text-gray-500" *ngIf="paciente.direccion">{{ paciente.direccion }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ paciente.email }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ paciente.dni }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ paciente.telefono || 'N/A' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span *ngIf="paciente.seguroMedico" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                {{ paciente.seguroMedico }}
+              </span>
+              <span *ngIf="!paciente.seguroMedico" class="text-gray-400 text-sm">Sin seguro</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <button
+                (click)="toggleUsuarioActivo(paciente)"
+                [class]="paciente.activo ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 hover:bg-red-200'"
+                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer transition-colors">
+                {{ paciente.activo ? 'Activo' : 'Inactivo' }}
+              </button>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <button
+                (click)="deleteUsuario(paciente.id)"
+                class="text-red-600 hover:text-red-900 transition-colors">
+                🗑️ Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="filteredPacientes.length === 0" class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+        <p class="text-gray-500 mt-4">No se encontraron pacientes</p>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TABLA: ADMINISTRADORES -->
+    <!-- ========================================== -->
+    <div *ngIf="activeTab === 'administradores'" class="bg-white rounded-lg shadow overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Administrador</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DNI</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let admin of filteredAdministradores" class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="h-10 w-10 flex-shrink-0">
+                  <div class="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-semibold">
+                    {{ admin.nombre.charAt(0) }}{{ admin.apellido.charAt(0) }}
+                  </div>
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">{{ admin.nombre }} {{ admin.apellido }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ admin.email }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ admin.dni }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ admin.telefono || 'N/A' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <button
+                (click)="toggleUsuarioActivo(admin)"
+                [class]="admin.activo ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 hover:bg-red-200'"
+                class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer transition-colors">
+                {{ admin.activo ? 'Activo' : 'Inactivo' }}
+              </button>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <button
+                (click)="deleteUsuario(admin.id)"
+                class="text-red-600 hover:text-red-900 transition-colors">
+                🗑️ Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="filteredAdministradores.length === 0" class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <p class="text-gray-500 mt-4">No se encontraron administradores</p>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- Modal Usuario -->
-<div *ngIf="showModal" class="fixed inset-0 z-50 overflow-y-auto">
-  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" (click)="closeModal()"></div>
-
-    <div class="relative inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-medium text-gray-900">
-          {{ editMode ? 'Editar Usuario' : 'Nuevo Usuario' }}
-        </h3>
-        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-500">
-          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <form [formGroup]="personalForm" (ngSubmit)="saveUsuario()">
-        <div class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Nombre</label>
-              <input
-                type="text"
-                formControlName="nombre"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Apellido</label>
-              <input
-                type="text"
-                formControlName="apellido"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Usuario</label>
-            <input
-              type="text"
-              formControlName="username"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              formControlName="email"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          </div>
-
-          <div *ngIf="!editMode">
-            <label class="block text-sm font-medium text-gray-700">Contraseña</label>
-            <input
-              type="password"
-              formControlName="password"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-            <input
-              type="tel"
-              formControlName="telefono"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Rol</label>
-            <select
-              formControlName="rol"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-              <option value="ADMIN">Administrador</option>
-              <option value="DOCTOR">Doctor</option>
-              <option value="PACIENTE">Paciente</option>
-            </select>
-          </div>
-
-          <div class="flex items-center">
-            <input
-              type="checkbox"
-              formControlName="activo"
-              class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-            <label class="ml-2 block text-sm text-gray-900">Usuario activo</label>
-          </div>
-        </div>
-
-        <div class="mt-6 flex justify-end space-x-3">
-          <button
-            type="button"
-            (click)="closeModal()"
-            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            [disabled]="!personalForm.valid"
-            class="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
-            {{ editMode ? 'Actualizar' : 'Crear' }}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Doctor -->
+<!-- ========================================== -->
+<!-- MODAL: REGISTRAR DOCTOR -->
+<!-- ========================================== -->
 <div *ngIf="showDoctorModal" class="fixed inset-0 z-50 overflow-y-auto">
   <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
     <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" (click)="closeDoctorModal()"></div>
 
     <div class="relative inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-medium text-gray-900">
-          {{ editMode ? 'Editar Doctor' : 'Nuevo Doctor' }}
-        </h3>
+        <h3 class="text-lg font-medium text-gray-900">Registrar Nuevo Doctor</h3>
         <button (click)="closeDoctorModal()" class="text-gray-400 hover:text-gray-500">
           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -317,99 +425,114 @@
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700">Nombre</label>
+              <label class="block text-sm font-medium text-gray-700">DNI *</label>
               <input
                 type="text"
-                formControlName="nombre"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Apellido</label>
-              <input
-                type="text"
-                formControlName="apellido"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Usuario</label>
-              <input
-                type="text"
-                formControlName="username"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Email</label>
-              <input
-                type="email"
-                formControlName="email"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div *ngIf="!editMode">
-              <label class="block text-sm font-medium text-gray-700">Contraseña</label>
-              <input
-                type="password"
-                formControlName="password"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                formControlName="dni"
+                maxlength="8"
+                placeholder="12345678"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                [class.border-red-500]="doctorForm.get('dni')?.invalid && doctorForm.get('dni')?.touched">
+              <p *ngIf="doctorForm.get('dni')?.invalid && doctorForm.get('dni')?.touched" class="text-red-500 text-xs mt-1">
+                DNI debe tener 8 dígitos
+              </p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Teléfono</label>
               <input
-                type="tel"
+                type="text"
                 formControlName="telefono"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                maxlength="9"
+                placeholder="987654321"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700">Especialidad</label>
-              <select
-                formControlName="especialidad"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option value="">Seleccione...</option>
-                <option *ngFor="let esp of especialidades" [value]="esp">
-                  {{ esp.replace('_', ' ') }}
-                </option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Licencia</label>
+              <label class="block text-sm font-medium text-gray-700">Nombre *</label>
               <input
                 type="text"
-                formControlName="licencia"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                formControlName="nombre"
+                placeholder="Juan"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                [class.border-red-500]="doctorForm.get('nombre')?.invalid && doctorForm.get('nombre')?.touched">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Apellido *</label>
+              <input
+                type="text"
+                formControlName="apellido"
+                placeholder="Pérez"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                [class.border-red-500]="doctorForm.get('apellido')?.invalid && doctorForm.get('apellido')?.touched">
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Horario Inicio</label>
-              <input
-                type="time"
-                formControlName="horarioInicio"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Horario Fin</label>
-              <input
-                type="time"
-                formControlName="horarioFin"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-          </div>
-
-          <div class="flex items-center">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email *</label>
             <input
-              type="checkbox"
-              formControlName="activo"
-              class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-            <label class="ml-2 block text-sm text-gray-900">Doctor activo</label>
+              type="email"
+              formControlName="email"
+              placeholder="doctor@hospital.com"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+              [class.border-red-500]="doctorForm.get('email')?.invalid && doctorForm.get('email')?.touched">
+            <p *ngIf="doctorForm.get('email')?.invalid && doctorForm.get('email')?.touched" class="text-red-500 text-xs mt-1">
+              Ingrese un email válido
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Contraseña *</label>
+            <input
+              type="password"
+              formControlName="password"
+              placeholder="Mínimo 6 caracteres"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+              [class.border-red-500]="doctorForm.get('password')?.invalid && doctorForm.get('password')?.touched">
+            <p *ngIf="doctorForm.get('password')?.invalid && doctorForm.get('password')?.touched" class="text-red-500 text-xs mt-1">
+              La contraseña debe tener al menos 6 caracteres
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Especialidad *</label>
+            <select
+              formControlName="especialidadId"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+              [class.border-red-500]="doctorForm.get('especialidadId')?.invalid && doctorForm.get('especialidadId')?.touched">
+              <option value="">Seleccione una especialidad...</option>
+              <option *ngFor="let esp of especialidades" [value]="esp.id">
+                {{ esp.nombre }}
+              </option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Hora Inicio *</label>
+              <input
+                type="time"
+                formControlName="horarioAtencionInicio"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Hora Fin *</label>
+              <input
+                type="time"
+                formControlName="horarioAtencionFin"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Duración Cita (min) *</label>
+              <input
+                type="number"
+                formControlName="duracionCitaMinutos"
+                min="15"
+                max="120"
+                placeholder="30"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+            </div>
           </div>
         </div>
 
@@ -417,14 +540,254 @@
           <button
             type="button"
             (click)="closeDoctorModal()"
-            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             Cancelar
           </button>
           <button
             type="submit"
-            [disabled]="!doctorForm.valid"
-            class="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
-            {{ editMode ? 'Actualizar' : 'Crear' }}
+            [disabled]="!doctorForm.valid || isLoading"
+            class="px-4 py-2 bg-green-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            {{ isLoading ? 'Registrando...' : 'Registrar Doctor' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: REGISTRAR PACIENTE -->
+<!-- ========================================== -->
+<div *ngIf="showPacienteModal" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" (click)="closePacienteModal()"></div>
+
+    <div class="relative inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Registrar Nuevo Paciente</h3>
+        <button (click)="closePacienteModal()" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="pacienteForm" (ngSubmit)="savePaciente()">
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">DNI *</label>
+              <input
+                type="text"
+                formControlName="dni"
+                maxlength="8"
+                placeholder="12345678"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                [class.border-red-500]="pacienteForm.get('dni')?.invalid && pacienteForm.get('dni')?.touched">
+              <p *ngIf="pacienteForm.get('dni')?.invalid && pacienteForm.get('dni')?.touched" class="text-red-500 text-xs mt-1">
+                DNI debe tener 8 dígitos
+              </p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+              <input
+                type="text"
+                formControlName="telefono"
+                maxlength="9"
+                placeholder="987654321"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Nombre *</label>
+              <input
+                type="text"
+                formControlName="nombre"
+                placeholder="María"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                [class.border-red-500]="pacienteForm.get('nombre')?.invalid && pacienteForm.get('nombre')?.touched">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Apellido *</label>
+              <input
+                type="text"
+                formControlName="apellido"
+                placeholder="López"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                [class.border-red-500]="pacienteForm.get('apellido')?.invalid && pacienteForm.get('apellido')?.touched">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email *</label>
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="paciente@email.com"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+              [class.border-red-500]="pacienteForm.get('email')?.invalid && pacienteForm.get('email')?.touched">
+            <p *ngIf="pacienteForm.get('email')?.invalid && pacienteForm.get('email')?.touched" class="text-red-500 text-xs mt-1">
+              Ingrese un email válido
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Contraseña *</label>
+            <input
+              type="password"
+              formControlName="password"
+              placeholder="Mínimo 6 caracteres"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+              [class.border-red-500]="pacienteForm.get('password')?.invalid && pacienteForm.get('password')?.touched">
+            <p *ngIf="pacienteForm.get('password')?.invalid && pacienteForm.get('password')?.touched" class="text-red-500 text-xs mt-1">
+              La contraseña debe tener al menos 6 caracteres
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Dirección</label>
+            <input
+              type="text"
+              formControlName="direccion"
+              placeholder="Av. Principal 123, Lima"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Seguro Médico</label>
+            <input
+              type="text"
+              formControlName="seguroMedico"
+              placeholder="EsSalud, Pacífico, Rimac, etc."
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            type="button"
+            (click)="closePacienteModal()"
+            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="!pacienteForm.valid || isLoading"
+            class="px-4 py-2 bg-teal-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            {{ isLoading ? 'Registrando...' : 'Registrar Paciente' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: REGISTRAR ADMINISTRADOR -->
+<!-- ========================================== -->
+<div *ngIf="showAdminModal" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" (click)="closeAdminModal()"></div>
+
+    <div class="relative inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Registrar Nuevo Administrador</h3>
+        <button (click)="closeAdminModal()" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="adminForm" (ngSubmit)="saveAdmin()">
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">DNI *</label>
+              <input
+                type="text"
+                formControlName="dni"
+                maxlength="8"
+                placeholder="12345678"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                [class.border-red-500]="adminForm.get('dni')?.invalid && adminForm.get('dni')?.touched">
+              <p *ngIf="adminForm.get('dni')?.invalid && adminForm.get('dni')?.touched" class="text-red-500 text-xs mt-1">
+                DNI debe tener 8 dígitos
+              </p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+              <input
+                type="text"
+                formControlName="telefono"
+                maxlength="9"
+                placeholder="987654321"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Nombre *</label>
+              <input
+                type="text"
+                formControlName="nombre"
+                placeholder="Carlos"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                [class.border-red-500]="adminForm.get('nombre')?.invalid && adminForm.get('nombre')?.touched">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Apellido *</label>
+              <input
+                type="text"
+                formControlName="apellido"
+                placeholder="García"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                [class.border-red-500]="adminForm.get('apellido')?.invalid && adminForm.get('apellido')?.touched">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email *</label>
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="admin@hospital.com"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              [class.border-red-500]="adminForm.get('email')?.invalid && adminForm.get('email')?.touched">
+            <p *ngIf="adminForm.get('email')?.invalid && adminForm.get('email')?.touched" class="text-red-500 text-xs mt-1">
+              Ingrese un email válido
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Contraseña *</label>
+            <input
+              type="password"
+              formControlName="password"
+              placeholder="Mínimo 6 caracteres"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              [class.border-red-500]="adminForm.get('password')?.invalid && adminForm.get('password')?.touched">
+            <p *ngIf="adminForm.get('password')?.invalid && adminForm.get('password')?.touched" class="text-red-500 text-xs mt-1">
+              La contraseña debe tener al menos 6 caracteres
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            type="button"
+            (click)="closeAdminModal()"
+            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="!adminForm.valid || isLoading"
+            class="px-4 py-2 bg-purple-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            {{ isLoading ? 'Registrando...' : 'Registrar Administrador' }}
           </button>
         </div>
       </form>
