@@ -73,23 +73,6 @@ export interface RegistroPersonalRequest {
   direccion?: string;
 }
 
-export interface ReporteGenerado {
-  id: number;
-  titulo: string;
-  descripcion: string;
-  tipo: string;
-  fechaGeneracion: Date;
-  descargado: boolean;
-  rutaImagen?: string;
-  metric: string;
-}
-
-export interface MetricaReporte {
-  value: string;
-  label: string;
-  descripcion: string;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -165,90 +148,31 @@ export class AdminService {
     return this.http.get<Paciente>(`${this.baseUrl}/pacientes/${id}`);
   }
 
-  // MÉTODO CORREGIDO - usa la interfaz Cita
-  buscarCitas(doctorId?: number, fecha?: string): Observable<Cita[]> {
-    let params = new HttpParams();
-    if (doctorId) {
-      params = params.set('doctorId', doctorId.toString());
-    }
-    if (fecha) {
-      params = params.set('fecha', fecha);
-    }
-    return this.http.get<Cita[]>(`${this.baseUrl}/citas/buscar`, { params });
-  }
 
-  // MÉTODO CORREGIDO - usa la interfaz EstadisticasResumen
-  generarEstadisticas(metric: string = 'cancelaciones'): Observable<string> {
-    const params = new HttpParams().set('metric', metric);
-    return this.http.get(`${this.baseUrl}/estadisticas`, { 
-      params, 
-      responseType: 'text' 
-    });
-  }
+  // =================== ESTADÍSTICAS Y REPORTES ===================
 
+  /**
+   * Obtiene el resumen de estadísticas generales del sistema
+   */
   obtenerResumenEstadisticas(): Observable<EstadisticasResumen> {
     return this.http.get<EstadisticasResumen>(`${this.baseUrl}/estadisticas/resumen`);
   }
 
-  // =================== NUEVOS MÉTODOS PARA REPORTES ===================
-
   /**
-   * Método para descargar el gráfico generado por Python
+   * Genera un reporte gráfico usando Python
+   * @param metrica Tipo de métrica: 'cancelaciones' o 'citas_por_especialidad'
+   * @returns Blob de la imagen PNG generada
    */
-  descargarGrafico(metric: string): Observable<Blob> {
-    const params = new HttpParams().set('metric', metric);
-    return this.http.get(`${this.baseUrl}/estadisticas/descargar`, {
-      params,
+  generarReporte(metrica: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/reportes/${metrica}`, {
       responseType: 'blob'
     });
   }
 
   /**
-   * Obtiene las métricas disponibles para reportes
-   * (Por ahora mock, se puede conectar con backend si existe endpoint)
+   * Obtiene las métricas disponibles del backend
    */
-  obtenerMetricasDisponibles(): Observable<MetricaReporte[]> {
-    // Mock data - se puede reemplazar con llamada HTTP si el backend provee las métricas
-    const metricas: MetricaReporte[] = [
-      { 
-        value: 'cancelaciones', 
-        label: '📊 Tasa de Cancelación por Doctor', 
-        descripcion: 'Analiza las cancelaciones por médico' 
-      },
-      { 
-        value: 'citas_por_especialidad', 
-        label: '🏥 Citas por Especialidad', 
-        descripcion: 'Muestra citas realizadas por especialidad médica' 
-      }
-    ];
-    
-    return new Observable(observer => {
-      observer.next(metricas);
-      observer.complete();
-    });
-  }
-
-  /**
-   * Método para obtener reportes históricos del backend
-   * (Por ahora mock, se implementará cuando el backend tenga el endpoint)
-   */
-  obtenerReportesHistoricos(): Observable<ReporteGenerado[]> {
-    // Mock - se reemplazará con llamada HTTP real
-    return new Observable(observer => {
-      observer.next([]);
-      observer.complete();
-    });
-  }
-
-  /**
-   * Método para guardar un reporte en el backend
-   * (Por ahora mock, se implementará cuando el backend tenga el endpoint)
-   */
-  guardarReporte(reporte: ReporteGenerado): Observable<ReporteGenerado> {
-    // Mock - se reemplazará con llamada HTTP real
-    return new Observable(observer => {
-      observer.next(reporte);
-      observer.complete();
-    });
+  obtenerMetricasDisponibles(): Observable<{ [key: string]: string }> {
+    return this.http.get<{ [key: string]: string }>(`${this.baseUrl}/reportes/metricas-disponibles`);
   }
 }

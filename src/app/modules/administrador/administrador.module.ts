@@ -6,6 +6,7 @@ import { GestionPersonalComponent } from './gestion-personal/gestion-personal.co
 import { ReportesComponent } from './reportes/reportes.component';
 
 
+
 @NgModule({
   declarations: [
   ],
