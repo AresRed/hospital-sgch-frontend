@@ -64,21 +64,24 @@ export class AgendarCitaComponent implements OnInit {
     this.isLoading = true;
     this.pacienteService.getDoctores().subscribe({
       next: (data) => {
+        console.log('🟢 Doctores cargados:', data); // ✅ DEBUG
         this.doctores = data;
-        this.doctoresFiltrados = data; // Inicialmente mostrar todos
+        this.doctoresFiltrados = data;
 
-        // Extraer especialidades únicas de la lista de doctores
+        // Extraer especialidades únicas
         const especialidadesUnicas = [...new Set(data.map(d => d.especialidadNombre))];
         this.especialidades = especialidadesUnicas;
         
+        console.log('🟢 Especialidades:', this.especialidades); // ✅ DEBUG
+        
         this.isLoading = false;
 
-        // Si es una reprogramación, cargar los datos de la cita ahora
         if (this.esReprogramacion) {
           this.cargarDatosCita();
         }
       },
       error: (err) => {
+        console.error('🔴 Error cargando doctores:', err); // ✅ DEBUG
         this.messageService.showError('Error', 'No se pudieron cargar los doctores.');
         this.isLoading = false;
       }

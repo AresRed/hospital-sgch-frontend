@@ -1,5 +1,3 @@
-<app-header></app-header>
-
 <div class="min-h-screen bg-gray-50 p-6">
   <div class="max-w-7xl mx-auto">
     
@@ -185,7 +183,7 @@
               <button
                 (click)="deleteUsuario(usuario.id)"
                 class="text-red-600 hover:text-red-900 transition-colors">
-                🗑️ Eliminar
+                Eliminar
               </button>
             </td>
           </tr>
@@ -212,6 +210,7 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DNI</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horario</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bloqueos</th> <!-- ✅ NUEVA COLUMNA -->
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
           </tr>
@@ -247,6 +246,74 @@
               </div>
               <span *ngIf="!doctor.horarioAtencionInicio" class="text-gray-400">No asignado</span>
             </td>
+            
+            <!-- ✅ COLUMNA BLOQUEOS DE HORARIO (COMBINADA) -->
+<td class="px-6 py-4 whitespace-nowrap">
+  <div class="relative group flex flex-col space-y-1">
+
+    <!-- ⭐ Badge principal bonito -->
+    <span 
+      [ngClass]="{
+        'bg-green-100 text-green-800': (doctor.totalBloqueos || 0) === 0,
+        'bg-yellow-100 text-yellow-800': (doctor.totalBloqueos || 0) > 0 && (doctor.totalBloqueos || 0) <= 2,
+        'bg-orange-100 text-orange-800': (doctor.totalBloqueos || 0) > 2 && (doctor.totalBloqueos || 0) <= 5,
+        'bg-red-100 text-red-800': (doctor.totalBloqueos || 0) > 5
+      }"
+      class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full cursor-help text-center">
+      {{ doctor.totalBloqueos || 0 }} bloqueo(s)
+    </span>
+
+    <!-- ⭐ Vista previa de 1-2 bloqueos (estilo limpio) -->
+    <div *ngIf="doctor.bloqueos && doctor.bloqueos.length > 0" class="text-xs text-gray-500">
+      <div *ngFor="let bloqueo of doctor.bloqueos.slice(0, 2)">
+        • {{ bloqueo.motivo }}
+      </div>
+      <div *ngIf="doctor.bloqueos.length > 2" 
+           class="text-blue-600 cursor-pointer hover:underline"
+           (click)="verTodosBloqueos(doctor)">
+        +{{ doctor.bloqueos.length - 2 }} más...
+      </div>
+    </div>
+
+    <!-- ⭐ Sin bloqueos -->
+    <div *ngIf="!doctor.bloqueos || doctor.bloqueos.length === 0"
+         class="text-xs text-gray-400">
+      Sin bloqueos
+    </div>
+
+    <!-- ⭐ Tooltip profesional -->
+    <div *ngIf="doctor.bloqueos && doctor.bloqueos.length > 0" 
+         class="absolute z-10 invisible group-hover:visible bg-gray-900 text-white text-xs rounded-lg py-2 px-3 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 shadow-lg">
+      
+      <div class="font-semibold border-b border-gray-700 pb-1 mb-1">
+        Detalle de Bloqueos
+      </div>
+
+      <div class="space-y-1 max-h-32 overflow-y-auto">
+        <div *ngFor="let bloqueo of doctor.bloqueos" 
+             class="border-b border-gray-700 pb-1 last:border-0">
+          
+          <div class="font-medium text-yellow-300">
+            {{ bloqueo.motivo }}
+          </div>
+
+          <div class="text-gray-300">
+            {{ bloqueo.inicioBloqueo | date:'dd/MM/yy HH:mm' }} – 
+            {{ bloqueo.finBloqueo   | date:'dd/MM/yy HH:mm' }}
+          </div>
+
+          <div *ngIf="bloqueo.esRecurrente" class="text-green-400 text-xs">
+            🔄 Recurrente
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</td>
+
+            
             <td class="px-6 py-4 whitespace-nowrap">
               <button
                 (click)="toggleUsuarioActivo(doctor)"
@@ -257,9 +324,14 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <button
+                (click)="openEditDoctorModal(doctor)"
+                class="text-blue-600 hover:text-blue-900 transition-colors mr-4">
+                Editar
+              </button>
+              <button
                 (click)="deleteUsuario(doctor.id)"
                 class="text-red-600 hover:text-red-900 transition-colors">
-                🗑️ Eliminar
+                Eliminar
               </button>
             </td>
           </tr>
@@ -324,9 +396,14 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <button
+                (click)="openEditPacienteModal(paciente)"
+                class="text-blue-600 hover:text-blue-900 transition-colors mr-4">
+                Editar
+              </button>
+              <button
                 (click)="deleteUsuario(paciente.id)"
                 class="text-red-600 hover:text-red-900 transition-colors">
-                🗑️ Eliminar
+                Eliminar
               </button>
             </td>
           </tr>
@@ -383,9 +460,14 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <button
+                (click)="openEditAdminModal(admin)"
+                class="text-blue-600 hover:text-blue-900 transition-colors mr-4">
+                Editar
+              </button>
+              <button
                 (click)="deleteUsuario(admin.id)"
                 class="text-red-600 hover:text-red-900 transition-colors">
-                🗑️ Eliminar
+                Eliminar
               </button>
             </td>
           </tr>
@@ -481,7 +563,14 @@
               Ingrese un email válido
             </p>
           </div>
-
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Dirección</label>
+            <input
+              type="text"
+              formControlName="direccion"
+              placeholder="Av. Principal 123, Lima"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+          </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Contraseña *</label>
             <input
@@ -534,7 +623,52 @@
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
             </div>
           </div>
+          <!-- SECCIÓN: BLOQUEOS DE HORARIO -->
+        <div class="mt-6 border-t pt-6">
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="text-md font-semibold text-gray-700">Bloqueos de Horario</h4>
+            <button
+              type="button"
+              (click)="openAgregarBloqueoModal()"
+              class="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600 transition flex items-center">
+              <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Agregar Bloqueo
+            </button>
+          </div>
+
+          <!-- Lista de bloqueos temporales -->
+          <div *ngIf="bloqueos.length > 0" class="space-y-2">
+            <div *ngFor="let bloqueo of bloqueos; let i = index" 
+                class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-800">{{ bloqueo.motivo }}</p>
+                <p class="text-xs text-gray-600">
+                  {{ bloqueo.inicioBloqueo | date:'dd/MM/yyyy HH:mm' }} - 
+                  {{ bloqueo.finBloqueo | date:'dd/MM/yyyy HH:mm' }}
+                </p>
+                <span *ngIf="bloqueo.esRecurrente" 
+                      class="inline-block mt-1 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">
+                  Recurrente
+                </span>
+              </div>
+              <button
+                type="button"
+                (click)="eliminarBloqueo(i)"
+                class="ml-4 text-red-500 hover:text-red-700 transition">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <p *ngIf="bloqueos.length === 0" class="text-sm text-gray-500 text-center py-4">
+            No hay bloqueos agregados. Los bloqueos se usarán para períodos de descanso o no disponibilidad.
+          </p>
         </div>
+      </div>
 
         <div class="mt-6 flex justify-end space-x-3">
           <button
@@ -750,6 +884,15 @@
           </div>
 
           <div>
+            <label class="block text-sm font-medium text-gray-700">Dirección</label>
+            <input
+              type="text"
+              formControlName="direccion"
+              placeholder="Av. Principal 123, Lima"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+          </div>
+
+          <div>
             <label class="block text-sm font-medium text-gray-700">Email *</label>
             <input
               type="email"
@@ -788,6 +931,669 @@
             [disabled]="!adminForm.valid || isLoading"
             class="px-4 py-2 bg-purple-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             {{ isLoading ? 'Registrando...' : 'Registrar Administrador' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: AGREGAR BLOQUEO DE HORARIO -->
+<!-- ========================================== -->
+<div *ngIf="showAgregarBloqueoModal" class="fixed inset-0 z-[60] overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" (click)="closeAgregarBloqueoModal()"></div>
+
+    <div class="relative inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Agregar Bloqueo de Horario</h3>
+        <button (click)="closeAgregarBloqueoModal()" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="bloqueoForm" (ngSubmit)="agregarBloqueo()">
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Fecha Inicio *</label>
+              <input
+                type="date"
+                formControlName="fechaInicio"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                [class.border-red-500]="bloqueoForm.get('fechaInicio')?.invalid && bloqueoForm.get('fechaInicio')?.touched">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Hora Inicio *</label>
+              <input
+                type="time"
+                formControlName="horaInicio"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                [class.border-red-500]="bloqueoForm.get('horaInicio')?.invalid && bloqueoForm.get('horaInicio')?.touched">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Fecha Fin *</label>
+              <input
+                type="date"
+                formControlName="fechaFin"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                [class.border-red-500]="bloqueoForm.get('fechaFin')?.invalid && bloqueoForm.get('fechaFin')?.touched">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Hora Fin *</label>
+              <input
+                type="time"
+                formControlName="horaFin"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                [class.border-red-500]="bloqueoForm.get('horaFin')?.invalid && bloqueoForm.get('horaFin')?.touched">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Motivo del Bloqueo *</label>
+            <input
+              type="text"
+              formControlName="motivo"
+              placeholder="Ej: Almuerzo, Congreso, Vacaciones"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+              [class.border-red-500]="bloqueoForm.get('motivo')?.invalid && bloqueoForm.get('motivo')?.touched">
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              formControlName="esRecurrente"
+              id="esRecurrente"
+              class="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded">
+            <label for="esRecurrente" class="ml-2 block text-sm text-gray-900">
+              Es recurrente (se repite semanalmente)
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            type="button"
+            (click)="closeAgregarBloqueoModal()"
+            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="!bloqueoForm.valid"
+            class="px-4 py-2 bg-yellow-500 border border-transparent rounded-md text-sm font-medium text-white hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            Agregar Bloqueo
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- ========================================== -->
+<!-- MODAL: EDITAR DOCTOR -->
+<!-- ========================================== -->
+<div *ngIf="showEditDoctorModal" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" (click)="closeEditDoctorModal()"></div>
+
+    <div class="relative inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Editar Doctor</h3>
+        <button (click)="closeEditDoctorModal()" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="editDoctorForm" (ngSubmit)="updateDoctor()">
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">DNI *</label>
+              <input
+                type="text"
+                formControlName="dni"
+                maxlength="8"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                [class.border-red-500]="editDoctorForm.get('dni')?.invalid && editDoctorForm.get('dni')?.touched">
+              <p *ngIf="editDoctorForm.get('dni')?.invalid && editDoctorForm.get('dni')?.touched" class="text-red-500 text-xs mt-1">
+                DNI debe tener 8 dígitos
+              </p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+              <input
+                type="text"
+                formControlName="telefono"
+                maxlength="9"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Nombre *</label>
+              <input
+                type="text"
+                formControlName="nombre"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                [class.border-red-500]="editDoctorForm.get('nombre')?.invalid && editDoctorForm.get('nombre')?.touched">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Apellido *</label>
+              <input
+                type="text"
+                formControlName="apellido"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                [class.border-red-500]="editDoctorForm.get('apellido')?.invalid && editDoctorForm.get('apellido')?.touched">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email *</label>
+            <input
+              type="email"
+              formControlName="email"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+              [class.border-red-500]="editDoctorForm.get('email')?.invalid && editDoctorForm.get('email')?.touched">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Dirección</label>
+            <input
+              type="text"
+              formControlName="direccion"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+          </div>
+
+          <!-- ✅ CAMPO DE CONTRASEÑA OPCIONAL -->
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Nueva Contraseña (Opcional)
+            </label>
+            <input
+              type="password"
+              formControlName="password"
+              placeholder="Dejar vacío para mantener la actual"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+              [class.border-red-500]="editDoctorForm.get('password')?.invalid && editDoctorForm.get('password')?.touched">
+            <p *ngIf="editDoctorForm.get('password')?.invalid && editDoctorForm.get('password')?.touched" class="text-red-500 text-xs mt-1">
+              La contraseña debe tener al menos 6 caracteres
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Especialidad *</label>
+            <select
+              formControlName="especialidadId"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+              <option value="">Seleccione una especialidad...</option>
+              <option *ngFor="let esp of especialidades" [value]="esp.id">
+                {{ esp.nombre }}
+              </option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Hora Inicio *</label>
+              <input
+                type="time"
+                formControlName="horarioAtencionInicio"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Hora Fin *</label>
+              <input
+                type="time"
+                formControlName="horarioAtencionFin"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Duración Cita (min) *</label>
+              <input
+                type="number"
+                formControlName="duracionCitaMinutos"
+                min="15"
+                max="120"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+            </div>
+          </div>
+
+          <!-- BLOQUEOS EXISTENTES Y NUEVOS -->
+  <div class="mt-6 border-t pt-6">
+    <div class="flex justify-between items-center mb-4">
+      <h4 class="text-md font-semibold text-gray-700">Bloqueos de Horario</h4>
+      <button
+        type="button"
+        (click)="openAgregarBloqueoEdicionModal()"
+        class="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600 transition flex items-center">
+        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Agregar Bloqueo
+      </button>
+    </div>
+
+  <!-- Bloqueos existentes (ya guardados en BD) -->
+<div *ngIf="editBloqueos.length > 0" class="mb-4">
+  <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Bloqueos Registrados</p>
+  <div class="space-y-2 max-h-40 overflow-y-auto">
+    <div *ngFor="let bloqueo of editBloqueos" 
+        class="flex justify-between items-center bg-blue-50 border border-blue-200 p-3 rounded-lg">
+      <div class="flex-1">
+        <p class="text-sm font-medium text-gray-800">{{ bloqueo.motivo }}</p>
+        <p class="text-xs text-gray-600">
+          {{ bloqueo.inicioBloqueo | date:'dd/MM/yyyy HH:mm' }} - 
+          {{ bloqueo.finBloqueo | date:'dd/MM/yyyy HH:mm' }}
+        </p>
+        <span *ngIf="bloqueo.esRecurrente" 
+              class="inline-block mt-1 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">
+          Recurrente
+        </span>
+      </div>
+      <button
+        type="button"
+        (click)="eliminarBloqueoExistente(bloqueo.id!)"
+        class="ml-4 text-red-500 hover:text-red-700 transition"
+        title="Eliminar de la base de datos">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+  <!-- Nuevos bloqueos (pendientes de guardar) -->
+  <div *ngIf="editNuevosBloqueos.length > 0" class="mb-4">
+    <p class="text-xs font-semibold text-amber-600 uppercase mb-2">⏳ Bloqueos Nuevos (Pendientes de Guardar)</p>
+    <div class="space-y-2">
+      <div *ngFor="let bloqueo of editNuevosBloqueos; let i = index" 
+          class="flex justify-between items-center bg-amber-50 border border-amber-300 p-3 rounded-lg">
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-800">{{ bloqueo.motivo }}</p>
+          <p class="text-xs text-gray-600">
+            {{ bloqueo.inicioBloqueo | date:'dd/MM/yyyy HH:mm' }} - 
+            {{ bloqueo.finBloqueo | date:'dd/MM/yyyy HH:mm' }}
+          </p>
+          <span *ngIf="bloqueo.esRecurrente" 
+                class="inline-block mt-1 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">
+            Recurrente
+          </span>
+        </div>
+        <button
+          type="button"
+          (click)="eliminarBloqueoTemporal(i)"
+          class="ml-4 text-red-500 hover:text-red-700 transition"
+          title="Eliminar de la lista temporal">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <p *ngIf="editBloqueos.length === 0 && editNuevosBloqueos.length === 0" 
+     class="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded">
+    No hay bloqueos. Haz clic en "Agregar Bloqueo" para añadir períodos de no disponibilidad.
+  </p>
+</div>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            type="button"
+            (click)="closeEditDoctorModal()"
+            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="!editDoctorForm.valid || isLoading"
+            class="px-4 py-2 bg-green-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            {{ isLoading ? 'Actualizando...' : 'Guardar Cambios' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: EDITAR PACIENTE -->
+<!-- ========================================== -->
+<div *ngIf="showEditPacienteModal" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" (click)="closeEditPacienteModal()"></div>
+
+    <div class="relative inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Editar Paciente</h3>
+        <button (click)="closeEditPacienteModal()" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="editPacienteForm" (ngSubmit)="updatePaciente()">
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">DNI *</label>
+              <input
+                type="text"
+                formControlName="dni"
+                maxlength="8"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                [class.border-red-500]="editPacienteForm.get('dni')?.invalid && editPacienteForm.get('dni')?.touched">
+              <p *ngIf="editPacienteForm.get('dni')?.invalid && editPacienteForm.get('dni')?.touched" class="text-red-500 text-xs mt-1">
+                DNI debe tener 8 dígitos
+              </p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+              <input
+                type="text"
+                formControlName="telefono"
+                maxlength="9"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Nombre *</label>
+              <input
+                type="text"
+                formControlName="nombre"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                [class.border-red-500]="editPacienteForm.get('nombre')?.invalid && editPacienteForm.get('nombre')?.touched">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Apellido *</label>
+              <input
+                type="text"
+                formControlName="apellido"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                [class.border-red-500]="editPacienteForm.get('apellido')?.invalid && editPacienteForm.get('apellido')?.touched">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email *</label>
+            <input
+              type="email"
+              formControlName="email"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+              [class.border-red-500]="editPacienteForm.get('email')?.invalid && editPacienteForm.get('email')?.touched">
+          </div>
+
+          <!-- ✅ CAMPO DE CONTRASEÑA OPCIONAL -->
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Nueva Contraseña (Opcional)
+            </label>
+            <input
+              type="password"
+              formControlName="password"
+              placeholder="Dejar vacío para mantener la actual"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+              [class.border-red-500]="editPacienteForm.get('password')?.invalid && editPacienteForm.get('password')?.touched">
+            <p *ngIf="editPacienteForm.get('password')?.invalid && editPacienteForm.get('password')?.touched" class="text-red-500 text-xs mt-1">
+              La contraseña debe tener al menos 6 caracteres
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Dirección</label>
+            <input
+              type="text"
+              formControlName="direccion"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Seguro Médico</label>
+            <input
+              type="text"
+              formControlName="seguroMedico"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            type="button"
+            (click)="closeEditPacienteModal()"
+            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="!editPacienteForm.valid || isLoading"
+            class="px-4 py-2 bg-teal-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            {{ isLoading ? 'Actualizando...' : 'Guardar Cambios' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: EDITAR ADMINISTRADOR -->
+<!-- ========================================== -->
+<div *ngIf="showEditAdminModal" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" (click)="closeEditAdminModal()"></div>
+
+    <div class="relative inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Editar Administrador</h3>
+        <button (click)="closeEditAdminModal()" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="editAdminForm" (ngSubmit)="updateAdmin()">
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">DNI *</label>
+              <input
+                type="text"
+                formControlName="dni"
+                maxlength="8"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                [class.border-red-500]="editAdminForm.get('dni')?.invalid && editAdminForm.get('dni')?.touched">
+              <p *ngIf="editAdminForm.get('dni')?.invalid && editAdminForm.get('dni')?.touched" class="text-red-500 text-xs mt-1">
+                DNI debe tener 8 dígitos
+              </p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+              <input
+                type="text"
+                formControlName="telefono"
+                maxlength="9"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Nombre *</label>
+              <input
+                type="text"
+                formControlName="nombre"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                [class.border-red-500]="editAdminForm.get('nombre')?.invalid && editAdminForm.get('nombre')?.touched">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Apellido *</label>
+              <input
+                type="text"
+                formControlName="apellido"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                [class.border-red-500]="editAdminForm.get('apellido')?.invalid && editAdminForm.get('apellido')?.touched">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email *</label>
+            <input
+              type="email"
+              formControlName="email"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              [class.border-red-500]="editAdminForm.get('email')?.invalid && editAdminForm.get('email')?.touched">
+          </div>
+
+          <!-- ✅ CAMPO DE CONTRASEÑA OPCIONAL -->
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Nueva Contraseña (Opcional)
+            </label>
+            <input
+              type="password"
+              formControlName="password"
+              placeholder="Dejar vacío para mantener la actual"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+              [class.border-red-500]="editAdminForm.get('password')?.invalid && editAdminForm.get('password')?.touched">
+            <p *ngIf="editAdminForm.get('password')?.invalid && editAdminForm.get('password')?.touched" class="text-red-500 text-xs mt-1">
+              La contraseña debe tener al menos 6 caracteres
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Dirección</label>
+            <input
+              type="text"
+              formControlName="direccion"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            type="button"
+            (click)="closeEditAdminModal()"
+            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="!editAdminForm.valid || isLoading"
+            class="px-4 py-2 bg-purple-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            {{ isLoading ? 'Actualizando...' : 'Guardar Cambios' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- ========================================== -->
+<!-- MODAL: AGREGAR BLOQUEO DE HORARIO (PARA EDICIÓN) -->
+<!-- ========================================== -->
+<div *ngIf="showAgregarBloqueoEdicionModal" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" (click)="closeAgregarBloqueoEdicionModal()"></div>
+
+    <div class="relative inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Agregar Bloqueo de Horario</h3>
+        <button (click)="closeAgregarBloqueoEdicionModal()" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="bloqueoEdicionForm" (ngSubmit)="agregarBloqueoEdicion()">
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Fecha Inicio *</label>
+              <input
+                type="date"
+                formControlName="fechaInicio"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                [class.border-red-500]="bloqueoEdicionForm.get('fechaInicio')?.invalid && bloqueoEdicionForm.get('fechaInicio')?.touched">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Hora Inicio *</label>
+              <input
+                type="time"
+                formControlName="horaInicio"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                [class.border-red-500]="bloqueoEdicionForm.get('horaInicio')?.invalid && bloqueoEdicionForm.get('horaInicio')?.touched">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Fecha Fin *</label>
+              <input
+                type="date"
+                formControlName="fechaFin"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                [class.border-red-500]="bloqueoEdicionForm.get('fechaFin')?.invalid && bloqueoEdicionForm.get('fechaFin')?.touched">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Hora Fin *</label>
+              <input
+                type="time"
+                formControlName="horaFin"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+                [class.border-red-500]="bloqueoEdicionForm.get('horaFin')?.invalid && bloqueoEdicionForm.get('horaFin')?.touched">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Motivo del Bloqueo *</label>
+            <input
+              type="text"
+              formControlName="motivo"
+              placeholder="Ej: Almuerzo, Congreso, Vacaciones"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
+              [class.border-red-500]="bloqueoEdicionForm.get('motivo')?.invalid && bloqueoEdicionForm.get('motivo')?.touched">
+          </div>
+
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              formControlName="esRecurrente"
+              id="esRecurrenteEdicion"
+              class="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded">
+            <label for="esRecurrenteEdicion" class="ml-2 block text-sm text-gray-900">
+              Es recurrente (se repite semanalmente)
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            type="button"
+            (click)="closeAgregarBloqueoEdicionModal()"
+            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="!bloqueoEdicionForm.valid"
+            class="px-4 py-2 bg-yellow-500 border border-transparent rounded-md text-sm font-medium text-white hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            Agregar Bloqueo
           </button>
         </div>
       </form>

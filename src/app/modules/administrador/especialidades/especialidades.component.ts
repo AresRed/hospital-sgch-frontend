@@ -104,7 +104,7 @@ export class EspecialidadesComponent implements OnInit {
         this.adminService.actualizarEspecialidad(this.selectedEspecialidad.id!, especialidad).subscribe({
           next: (response) => {
             console.log('Especialidad actualizada:', response);
-            this.successMessage = '✅ Especialidad actualizada exitosamente';
+            this.successMessage = 'Especialidad actualizada exitosamente';
             this.isLoading = false;
             this.closeModal();
             this.loadEspecialidades();
@@ -122,7 +122,7 @@ export class EspecialidadesComponent implements OnInit {
         this.adminService.crearEspecialidad(especialidad).subscribe({
           next: (response) => {
             console.log('Especialidad creada:', response);
-            this.successMessage = '✅ Especialidad creada exitosamente';
+            this.successMessage = 'Especialidad creada exitosamente';
             this.isLoading = false;
             this.closeModal();
             this.loadEspecialidades();
@@ -151,7 +151,7 @@ export class EspecialidadesComponent implements OnInit {
       this.adminService.eliminarEspecialidad(id).subscribe({
         next: (response) => {
           console.log('Especialidad eliminada:', response);
-          this.successMessage = '✅ Especialidad eliminada exitosamente';
+          this.successMessage = 'Especialidad eliminada exitosamente';
           this.isLoading = false;
           this.especialidades = this.especialidades.filter(e => e.id !== id);
           this.clearMessages();

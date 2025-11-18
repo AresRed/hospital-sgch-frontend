@@ -25,6 +25,9 @@ export interface Doctor extends Usuario {
   horarioAtencionInicio?: string;
   horarioAtencionFin?: string;
   duracionCitaMinutos?: number;
+  bloqueos?: BloqueoHorario[];
+  totalBloqueos?: number;
+  mostrarBloqueos?: boolean;
 }
 
 export interface Paciente extends Usuario {
@@ -64,13 +67,66 @@ export interface RegistroPersonalRequest {
   email: string;
   password: string;
   telefono?: string;
+  direccion?: string;
   rol: string;
-  especialidadId?: number;  // Para doctor
+  especialidadId?: number;
   horarioAtencionInicio?: string;
   horarioAtencionFin?: string;
   duracionCitaMinutos?: number;
   seguroMedico?: string;
+}
+
+export interface BloqueoHorario {
+  id?: number;
+  doctorId: number;
+  inicioBloqueo: string; // ISO DateTime
+  finBloqueo: string;    // ISO DateTime
+  motivo: string;
+  esRecurrente: boolean;
+}
+
+export interface BloqueoHorarioRequest {
+  id: number;
+  doctorId: number;
+  inicioBloqueo: string;
+  finBloqueo: string;
+  motivo: string;
+  esRecurrente: boolean;
+}
+
+export interface DoctorUpdateDTO {
+  dni?: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono?: string;
   direccion?: string;
+  password?: string;
+  especialidadId: number;
+  horarioAtencionInicio: string;
+  horarioAtencionFin: string;
+  duracionCitaMinutos: number;
+}
+
+export interface PacienteUpdateDTO {
+  dni?: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono?: string;
+  direccion?: string;
+  seguroMedico?: string;
+  password?: string;
+}
+
+export interface AdminUpdateDTO {
+  dni?: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono?: string;
+  direccion?: string;
+  password?: string;
 }
 
 @Injectable({
@@ -136,7 +192,7 @@ export class AdminService {
     return this.http.get<Doctor[]>(`${this.baseUrl}/doctores`);
   }
 
-  obtenerDoctorPorId(id: number): Observable<Doctor> {
+  obtenerDoctorPorId(id: number): Observable<any> {
     return this.http.get<Doctor>(`${this.baseUrl}/doctores/${id}`);
   }
 
@@ -146,6 +202,51 @@ export class AdminService {
 
   obtenerPacientePorId(id: number): Observable<Paciente> {
     return this.http.get<Paciente>(`${this.baseUrl}/pacientes/${id}`);
+  }
+
+  actualizarDoctor(id: number, dto: DoctorUpdateDTO): Observable<string> {
+    return this.http.put(`${this.baseUrl}/doctores/${id}`, dto, {
+      responseType: 'text'
+    });
+  }
+  /**
+   * Actualiza los datos de un paciente
+   */
+  actualizarPaciente(id: number, dto: PacienteUpdateDTO): Observable<string> {
+    return this.http.put(`${this.baseUrl}/pacientes/${id}`, dto, {
+      responseType: 'text'
+    });
+  }
+
+  /**
+   * Actualiza los datos de un administrador
+   */
+  actualizarAdministrador(id: number, dto: AdminUpdateDTO): Observable<string> {
+    return this.http.put(`${this.baseUrl}/administradores/${id}`, dto, {
+      responseType: 'text'
+    });
+  }
+  // =================== MÉTODOS DE BLOQUEO DE HORARIO ===================
+
+  /**
+   * Crea un bloqueo de horario para un doctor
+   */
+  crearBloqueoHorario(request: BloqueoHorarioRequest): Observable<BloqueoHorario> {
+    return this.http.post<BloqueoHorario>(`${this.baseUrl}/bloqueo-horario`, request);
+  }
+
+  /**
+   * Obtiene todos los bloqueos de horario de un doctor
+   */
+  obtenerBloqueosPorDoctor(doctorId: number): Observable<BloqueoHorario[]> {
+    return this.http.get<BloqueoHorario[]>(`${this.baseUrl}/bloqueo-horario/doctor/${doctorId}`);
+  }
+
+  /**
+   * Elimina un bloqueo de horario
+   */
+  eliminarBloqueoHorario(bloqueoId: number): Observable<string> {
+    return this.http.delete(`${this.baseUrl}/bloqueo-horario/${bloqueoId}`, { responseType: 'text' });
   }
 
 
@@ -175,4 +276,5 @@ export class AdminService {
   obtenerMetricasDisponibles(): Observable<{ [key: string]: string }> {
     return this.http.get<{ [key: string]: string }>(`${this.baseUrl}/reportes/metricas-disponibles`);
   }
+  
 }

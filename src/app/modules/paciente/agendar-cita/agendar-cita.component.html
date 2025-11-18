@@ -78,14 +78,24 @@
       <!-- Selección de Doctor -->
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-2">Doctor</label>
+        
+        <div *ngIf="doctoresFiltrados.length > 0" class="text-xs text-green-600 mb-2">
+          {{ doctoresFiltrados.length }} doctor(es) disponible(s)
+        </div>
+        
         <select [(ngModel)]="citaData.doctorId" 
                 (change)="onDoctorChange()"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
           <option value="0">Seleccionar doctor</option>
           <option *ngFor="let doctor of doctoresFiltrados" [value]="doctor.id">
-            {{ doctor.nombreCompleto }} - {{ doctor.especialidadNombre }}
+            Dr. {{ doctor.nombreCompleto }} - {{ doctor.especialidadNombre }}
           </option>
         </select>
+        
+        <div *ngIf="doctoresFiltrados.length === 0 && citaData.especialidad" 
+            class="text-xs text-red-600 mt-2">
+          No hay doctores disponibles para esta especialidad
+        </div>
       </div>
 
       <!-- Selección de Fecha -->
